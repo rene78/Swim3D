@@ -1,0 +1,74 @@
+body {
+  margin: 0;
+  overflow: hidden;
+  /* Hide scrollbars */
+  background-color: #f0f0f0;
+  font-family: sans-serif;
+}
+
+canvas {
+  display: block;
+  /* Removes tiny margin at bottom of canvas */
+}
+
+#loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1.5rem;
+  color: #333;
+  pointer-events: none;
+}
+
+/* Play/Pause Button */
+#playPauseBtn {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  border: none;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.6);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+#playPauseBtn:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+/* Pause symbol - two vertical bars */
+#playPauseBtn.pause {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+}
+
+#playPauseBtn.pause::before,
+#playPauseBtn.pause::after {
+  content: '';
+  width: 6px;
+  height: 20px;
+  background-color: white;
+  border-radius: 1px;
+}
+
+/* Play symbol - arrow pointing right */
+#playPauseBtn.play {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#playPauseBtn.play::before {
+  content: '';
+  width: 0;
+  height: 0;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+  border-left: 16px solid white;
+  margin-left: 4px;
+}

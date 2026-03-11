@@ -1,0 +1,145 @@
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { Timer } from 'three/addons/misc/Timer.js';
+import Stats from 'stats';//Displays the current fps of the animation
+
+// 1. Stats Setup
+const stats = new Stats();
+document.body.appendChild(stats.dom);
+
+// 2. Scene Setup
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xe0e0e0);
+scene.fog = new THREE.Fog(0xe0e0e0, 10, 50);
+
+// 3. Camera Setup
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+camera.position.set(0, 2, 5);
+
+// 4. Renderer Setup
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Softer shadow edges
+
+// Crucial for .glb models so colors don't look washed out:
+renderer.outputColorSpace = THREE.SRGBColorSpace; 
+renderer.toneMapping = THREE.ACESFilmicToneMapping; // More realistic lighting
+document.body.appendChild(renderer.domElement);
+
+// 5. Lighting
+const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.5);
+hemiLight.position.set(0, 20, 0);
+scene.add(hemiLight);
+
+const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
+dirLight.position.set(3, 10, 10);
+dirLight.castShadow = true;
+
+// Increase shadow resolution and area
+dirLight.shadow.mapSize.width = 1024;
+dirLight.shadow.mapSize.height = 1024;
+dirLight.shadow.camera.top = 5;
+dirLight.shadow.camera.bottom = -5;
+dirLight.shadow.camera.left = -5;
+dirLight.shadow.camera.right = 5;
+scene.add(dirLight);
+
+// Floor
+const mesh = new THREE.Mesh(
+  new THREE.PlaneGeometry(100, 100), 
+  new THREE.MeshPhongMaterial({ color: 0xcbcbcb, depthWrite: false })
+);
+mesh.rotation.x = -Math.PI / 2;
+mesh.receiveShadow = true;
+scene.add(mesh);
+
+// 6. Controls
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.target.set(0, 1, 0);
+
+// 7. Animation Global Variables
+let mixer;
+let animationAction;
+const timer = new Timer();
+
+// 8. Load Model
+const loader = new GLTFLoader();
+
+loader.load(
+  'swimmer.glb',
+  (gltf) => {
+    const model = gltf.scene;
+
+    model.traverse((object) => {
+      if (object.isMesh) {
+        object.castShadow = true;
+        object.receiveShadow = true;
+      }
+    });
+
+    scene.add(model);
+
+    if (gltf.animations && gltf.animations.length > 0) {
+      mixer = new THREE.AnimationMixer(model);
+      animationAction = mixer.clipAction(gltf.animations[0]);
+      animationAction.play();
+    }
+
+    document.getElementById('loading').style.display = 'none';
+  },
+  (xhr) => {
+    console.log(`${(xhr.loaded / xhr.total * 100).toFixed(2)}% loaded`); // Cleaner logging
+  },
+  (error) => {
+    console.error('An error happened', error);
+    document.getElementById('loading').innerText = 'Error loading model.';
+  }
+);
+
+// 9. Play/Pause Button
+const playPauseBtn = document.getElementById('playPauseBtn');
+
+playPauseBtn.addEventListener('click', () => {
+  if (!animationAction) return; // Prevent errors if clicked before model loads
+
+  // Toggle paused state
+  animationAction.paused = !animationAction.paused; //Set .paused to the opposite of what it was before this line of code.
+  
+  // Update UI classes
+  if (animationAction.paused) {
+    playPauseBtn.classList.replace('pause', 'play');
+  } else {
+    playPauseBtn.classList.replace('play', 'pause');
+  }
+});
+
+// Window Resize Handling
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// 10. Animation Loop
+function animate(timestamp) {
+  requestAnimationFrame(animate);
+  stats.update();
+
+  // Update the timer with the native timestamp
+  timer.update(timestamp);
+  
+  // Get the safe delta
+  const delta = timer.getDelta();
+
+  if (mixer) mixer.update(delta);
+
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+// Start the loop
+requestAnimationFrame(animate);

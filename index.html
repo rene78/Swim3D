@@ -5,30 +5,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Swim3D - Study the perfect freestyle technique</title>
-  <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-      /* Hide scrollbars */
-      background-color: #f0f0f0;
-      font-family: sans-serif;
-    }
-
-    canvas {
-      display: block;
-      /* Removes tiny margin at bottom of canvas */
-    }
-
-    #loading {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 1.5rem;
-      color: #333;
-      pointer-events: none;
-    }
-  </style>
+  <!-- Style related -->
+  <link rel='stylesheet' type='text/css' href='css/site.css' />
 
   <!-- Import Maps: The modern way to use modules without a build step -->
   <script type="importmap">
@@ -40,124 +18,14 @@
             }
         }
     </script>
+
+  <!-- Application script - MUST BE LAST since it depends on the others -->
+  <script src='js/site.js' type='module' defer></script>
 </head>
 
 <body>
-
   <div id="loading">Loading 3D Model...</div>
-
-  <script type="module">
-    import * as THREE from 'three';
-    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-    import Stats from 'stats'; // Import Stats based on the map above
-
-    // 1. Stats Setup
-    const stats = new Stats();
-    //stats.showPanel(0); // 0: fps, 1: ms, 2: mb, 3+: custom
-    document.body.appendChild(stats.dom); // Adds the FPS box to top-left
-
-    // 2. Scene Setup
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xe0e0e0);
-    scene.fog = new THREE.Fog(0xe0e0e0, 10, 50);
-
-    // 3. Camera Setup
-    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
-    camera.position.set(0, 2, 5);
-
-    // 4. Renderer Setup
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.shadowMap.enabled = true;
-    document.body.appendChild(renderer.domElement);
-
-    // 5. Lighting
-    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.5);
-    hemiLight.position.set(0, 20, 0);
-    scene.add(hemiLight);
-
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
-    dirLight.position.set(3, 10, 10);
-    dirLight.castShadow = true;
-    scene.add(dirLight);
-
-    // Floor
-    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshPhongMaterial({ color: 0xcbcbcb, depthWrite: false }));
-    mesh.rotation.x = - Math.PI / 2;
-    mesh.receiveShadow = true;
-    scene.add(mesh);
-
-    // 6. Controls
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.target.set(0, 1, 0);
-    controls.update();
-
-    // 7. Animation Global Variables
-    let mixer;
-    const clock = new THREE.Clock();
-
-    // 8. Load Model
-    const loader = new GLTFLoader();
-
-    loader.load(
-      'swimmer.glb',
-      function (gltf) {
-        const model = gltf.scene;
-
-        model.traverse(function (object) {
-          if (object.isMesh) {
-            object.castShadow = true;
-            object.receiveShadow = true;
-          }
-        });
-
-        scene.add(model);
-
-        if (gltf.animations && gltf.animations.length > 0) {
-          mixer = new THREE.AnimationMixer(model);
-          const action = mixer.clipAction(gltf.animations[0]);
-          action.play();
-        }
-
-        document.getElementById('loading').style.display = 'none';
-      },
-      function (xhr) {
-        console.log((xhr.loaded / xhr.total * 100) + '% loaded');
-      },
-      function (error) {
-        console.error('An error happened', error);
-        document.getElementById('loading').innerText = 'Error loading model.';
-      }
-    );
-
-    window.addEventListener('resize', onWindowResize);
-
-    function onWindowResize() {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    }
-
-    // 9. Animation Loop
-    function animate() {
-      requestAnimationFrame(animate);
-
-      // Update Stats
-      stats.update();
-
-      const delta = clock.getDelta();
-
-      if (mixer) mixer.update(delta);
-
-      controls.update();
-      renderer.render(scene, camera);
-    }
-
-    animate();
-  </script>
+  <button id="playPauseBtn" class="pause" aria-label="Pause animation"></button>
 </body>
 
 </html>
