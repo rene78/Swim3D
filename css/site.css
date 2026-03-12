@@ -148,3 +148,75 @@ canvas {
   border-right: 10px solid white;
   margin-right: 2px;
 }
+
+/* Speed controls */
+
+#speedControlWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  margin-bottom: 15px;
+}
+
+#speedToggleBtn {
+  background: none;
+  border: none;
+  color: #1a1a1a;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: transform 0.2s ease;
+}
+
+#speedToggleBtn:hover {
+  transform: scale(1.1);
+}
+
+#speedMenu {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+  opacity: 0;
+  pointer-events: none; /* Make unclickable when hidden */
+  transform: translateY(10px) scale(0.95);
+  transition: all 0.2s ease;
+  transform-origin: bottom center;
+}
+
+#speedMenu.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+
+.speed-option {
+  background-color: #dcdcdc;
+  border: none;
+  border-radius: 20px;
+  padding: 12px 24px;
+  font-size: 1.2rem;
+  font-family: inherit;
+  color: #000;
+  cursor: pointer;
+  min-width: 90px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  line-height: 1.2;
+}
+
+.speed-option:active {
+  transform: scale(0.95);
+}
+
+.speed-option.active {
+  background-color: #9df09b;
+}
+
+.speed-label-normal {
+  font-size: 0.9rem;
+  font-weight: normal;
+}

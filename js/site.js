@@ -72,6 +72,7 @@ gizmo.attachControls(controls);
 // 7. Animation Global Variables
 let mixer;
 let animationAction;
+let currentPlaybackSpeed = 1.0; // Keep track of speed state
 const timer = new Timer();
 
 // 8. Load Model
@@ -94,13 +95,14 @@ loader.load(
     if (gltf.animations && gltf.animations.length > 0) {
       mixer = new THREE.AnimationMixer(model);
       animationAction = mixer.clipAction(gltf.animations[0]);
+      animationAction.timeScale = currentPlaybackSpeed; // Apply speed on load
       animationAction.play();
     }
 
     document.getElementById('loading').style.display = 'none';
   },
   (xhr) => {
-    console.log(`${(xhr.loaded / xhr.total * 100).toFixed(2)}% loaded`); // Cleaner logging
+    console.log(`${(xhr.loaded / xhr.total * 100).toFixed(2)}% loaded`);
   },
   (error) => {
     console.error('An error happened', error);
@@ -113,11 +115,53 @@ const playPauseBtn = document.getElementById('playPauseBtn');
 const stepForwardBtn = document.getElementById('stepForwardBtn');
 const stepBackwardBtn = document.getElementById('stepBackwardBtn');
 
+// Speed Controls
+const speedToggleBtn = document.getElementById('speedToggleBtn');
+const speedMenu = document.getElementById('speedMenu');
+const speedOptions = document.querySelectorAll('.speed-option');
+
+// Toggle Speed Menu visibility
+speedToggleBtn.addEventListener('click', (e) => {
+  e.stopPropagation(); // Prevent document click listener from firing immediately
+  speedMenu.classList.toggle('visible');
+});
+
+// Handle Speed Selection
+speedOptions.forEach(option => {
+  option.addEventListener('click', (e) => {
+    e.stopPropagation(); 
+    
+    // 1. Get the newly selected speed
+    const selectedSpeed = parseFloat(option.getAttribute('data-speed'));
+    currentPlaybackSpeed = selectedSpeed;
+
+    // 2. Apply it to the 3D model if loaded
+    if (animationAction) {
+      animationAction.timeScale = currentPlaybackSpeed;
+    }
+
+    // 3. Update UI (highlight green)
+    speedOptions.forEach(opt => opt.classList.remove('active'));
+    option.classList.add('active');
+
+    // 4. Close the menu
+    speedMenu.classList.remove('visible');
+  });
+});
+
+// Close Speed Menu when clicking anywhere else on the page
+document.addEventListener('click', (e) => {
+  if (speedMenu.classList.contains('visible') && !speedMenu.contains(e.target)) {
+    speedMenu.classList.remove('visible');
+  }
+});
+
+// Play / Pause Logic
 playPauseBtn.addEventListener('click', () => {
   if (!animationAction) return; // Prevent errors if clicked before model loads
 
   // Toggle paused state
-  animationAction.paused = !animationAction.paused; //Set .paused to the opposite of what it was before this line of code.
+  animationAction.paused = !animationAction.paused; //Set 'animationAction.paused' to the opposite of what it was before this line of code.
 
   // Update UI classes
   if (animationAction.paused) {
@@ -161,7 +205,6 @@ function stepAnimation(stepAmount) {
 
 stepForwardBtn.addEventListener('click', () => stepAnimation(0.01));
 stepBackwardBtn.addEventListener('click', () => stepAnimation(-0.01));
-
 
 // Window Resize Handling
 window.addEventListener('resize', () => {
