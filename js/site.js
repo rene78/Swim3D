@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { Timer } from 'three/addons/misc/Timer.js';
+import { ViewportGizmo } from "three-viewport-gizmo"; //Cube at the bottom left to set certain views
 import Stats from 'stats';//Displays the current fps of the animation
 
 // 1. Stats Setup
@@ -25,7 +26,7 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Softer shadow edges
 
 // Crucial for .glb models so colors don't look washed out:
-renderer.outputColorSpace = THREE.SRGBColorSpace; 
+renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping; // More realistic lighting
 document.body.appendChild(renderer.domElement);
 
@@ -49,7 +50,7 @@ scene.add(dirLight);
 
 // Floor
 const mesh = new THREE.Mesh(
-  new THREE.PlaneGeometry(100, 100), 
+  new THREE.PlaneGeometry(100, 100),
   new THREE.MeshPhongMaterial({ color: 0xcbcbcb, depthWrite: false })
 );
 mesh.rotation.x = -Math.PI / 2;
@@ -60,6 +61,13 @@ scene.add(mesh);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.target.set(0, 1, 0);
+
+//Initialize viewport gizmo
+const gizmo = new ViewportGizmo(camera, renderer, {
+  type: "cube",
+  placement: "bottom-left"
+});
+gizmo.attachControls(controls);
 
 // 7. Animation Global Variables
 let mixer;
@@ -108,7 +116,7 @@ playPauseBtn.addEventListener('click', () => {
 
   // Toggle paused state
   animationAction.paused = !animationAction.paused; //Set .paused to the opposite of what it was before this line of code.
-  
+
   // Update UI classes
   if (animationAction.paused) {
     playPauseBtn.classList.replace('pause', 'play');
@@ -122,23 +130,36 @@ window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
+  gizmo.update();
 });
 
 // 10. Animation Loop
 function animate(timestamp) {
+  // 1. Tell the browser to run THIS function again on the next frame
+  // "requestAnimationFrame" is built into the web browser. Its only job is to say to the browser:
+  // "Hey, right before you draw the next picture on the screen, please run this specific block of code, i.e. the 'animate' function"
+
   requestAnimationFrame(animate);
+
+  //Update the fps stats
   stats.update();
 
   // Update the timer with the native timestamp
   timer.update(timestamp);
-  
+
   // Get the safe delta
   const delta = timer.getDelta();
 
+  // 2. Move the swimmer model forward a tiny bit
   if (mixer) mixer.update(delta);
 
   controls.update();
+
+  // 3. Take the picture (render the current position of the 3D model to the screen)
   renderer.render(scene, camera);
+
+  // 4. Render the viewport gizmo
+  gizmo.render();
 }
 
 // Start the loop
