@@ -108,8 +108,10 @@ loader.load(
   }
 );
 
-// 9. Play/Pause Button
+// 9. Playback Controls
 const playPauseBtn = document.getElementById('playPauseBtn');
+const stepForwardBtn = document.getElementById('stepForwardBtn');
+const stepBackwardBtn = document.getElementById('stepBackwardBtn');
 
 playPauseBtn.addEventListener('click', () => {
   if (!animationAction) return; // Prevent errors if clicked before model loads
@@ -120,10 +122,46 @@ playPauseBtn.addEventListener('click', () => {
   // Update UI classes
   if (animationAction.paused) {
     playPauseBtn.classList.replace('pause', 'play');
+    playPauseBtn.setAttribute('title', 'Play animation');
+    stepForwardBtn.classList.add('visible');
+    stepBackwardBtn.classList.add('visible');
   } else {
     playPauseBtn.classList.replace('play', 'pause');
+    playPauseBtn.setAttribute('title', 'Pause animation');
+    stepForwardBtn.classList.remove('visible');
+    stepBackwardBtn.classList.remove('visible');
   }
 });
+
+function stepAnimation(stepAmount) {
+  if (!animationAction || !mixer) return;
+
+  const duration = animationAction.getClip().duration;
+  console.log(animationAction.time);
+  let newTime = animationAction.time + stepAmount;
+
+  // Loop back around gracefully when stepping past start or end bounds
+  newTime = ((newTime % duration) + duration) % duration;
+  /* Examples for the code line above. Assumption: Clip length is 3s, stepAmount is 0.1s
+  1. Animation is currently at 2.8s
+    newTime = animationAction.time + stepAmount = 2.8s + 0.1s = 2.9s
+    newTime = ((newTime % duration) + duration) % duration = ((2.9s % 3s) + 3s) % 3s = (2.9s + 3s) % 3s = 5.9s % 3s
+    newTime = 2.9s
+  2. Animation is currently at 2.95s
+    newTime = animationAction.time + stepAmount = 2.95s + 0.1s = 3.05s
+    newTime = ((newTime % duration) + duration) % duration = ((3.05s % 3s) + 3s) % 3s = (0.05s + 3s) % 3s = 3.05s % 3s
+    newTime = 0.05s
+  */
+
+  animationAction.time = newTime;
+
+  // Force animation mixer to evaluate the new current time instantly so the screen updates
+  mixer.update(0);
+}
+
+stepForwardBtn.addEventListener('click', () => stepAnimation(0.01));
+stepBackwardBtn.addEventListener('click', () => stepAnimation(-0.01));
+
 
 // Window Resize Handling
 window.addEventListener('resize', () => {
