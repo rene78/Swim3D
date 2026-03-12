@@ -24,8 +24,8 @@ canvas {
 /* Container for all playback controls */
 #controlsContainer {
   position: absolute;
-  bottom: 50px;
-  right: 20px;
+  bottom: 20px;
+  right: 5px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -197,12 +197,12 @@ canvas {
   background-color: #dcdcdc;
   border: none;
   border-radius: 20px;
-  padding: 12px 24px;
+  padding: 10px 10px;
   font-size: 1.2rem;
   font-family: inherit;
   color: #000;
   cursor: pointer;
-  min-width: 90px;
+  /* min-width: 90px; */
   box-shadow: 0 4px 6px rgba(0,0,0,0.05);
   transition: background-color 0.2s ease, transform 0.1s ease;
   line-height: 1.2;
