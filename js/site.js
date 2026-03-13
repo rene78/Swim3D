@@ -83,6 +83,37 @@ loader.load(
   (gltf) => {
     const model = gltf.scene;
 
+    // Position the camera for a nice isometric view of the swimmer on page load
+
+    // 1. Determine a safe viewing distance.
+    let baseDistance = 3.0;
+
+    // 2. Adjust for mobile (portrait screens) so the swimmer isn't cut off horizontally
+    if (camera.aspect < 1.0) {
+      baseDistance /= camera.aspect;
+      baseDistance *= 0.85; // Slight tweak so it doesn't zoom out too aggressively
+    }
+
+    // 3. Define the center of the swimmer (1.3 meter along the X axis). This will be the location where the camera aims at.
+    // This step is needed because the swimmer's origin is right between his feet. We need to move along the x-axis to the center of the body (i.e. about 1.3m)
+    const targetPos = new THREE.Vector3(1.3, 0, 0);
+
+    // 4. Calculate the specific angle direction (+45 deg X, +45 deg Y equivalent)
+    // The vector (1, 1, 1) perfectly gives us an isometric view on Top, Front, and Right.
+    const dir = new THREE.Vector3(1, 1, 1).normalize();
+
+    // 5. Apply position to camera: 
+    // We start at the targetPos (1.3, 0, 0) and push the camera backwards along our perfect diagonal direction
+    camera.position.copy(targetPos).addScaledVector(dir, baseDistance);
+
+    // Tell the orbit controls to pivot perfectly around the swimmer's center
+    controls.target.copy(targetPos);
+
+    // Orient camera to look exactly at the swimmer's center, not (0,0,0)
+    camera.lookAt(targetPos);
+    controls.update();
+
+    // Enable shadow casting and receiving
     model.traverse((object) => {
       if (object.isMesh) {
         object.castShadow = true;
@@ -92,6 +123,7 @@ loader.load(
 
     scene.add(model);
 
+    //Load the first animation of model and play it
     if (gltf.animations && gltf.animations.length > 0) {
       mixer = new THREE.AnimationMixer(model);
       animationAction = mixer.clipAction(gltf.animations[0]);
@@ -129,8 +161,8 @@ speedToggleBtn.addEventListener('click', (e) => {
 // Handle Speed Selection
 speedOptions.forEach(option => {
   option.addEventListener('click', (e) => {
-    e.stopPropagation(); 
-    
+    e.stopPropagation();
+
     // 1. Get the newly selected speed
     const selectedSpeed = parseFloat(option.getAttribute('data-speed'));
     currentPlaybackSpeed = selectedSpeed;
@@ -215,6 +247,7 @@ window.addEventListener('resize', () => {
 });
 
 // 10. Animation Loop
+// The code below tells the browser to take a picture of the 3D scene 60 times a second (or whatever the refresh rate of the monitor is)
 function animate(timestamp) {
   // 1. Tell the browser to run THIS function again on the next frame
   // "requestAnimationFrame" is built into the web browser. Its only job is to say to the browser:
