@@ -1,0 +1,1 @@
+This folder contains short video clips of a professional swimmer performing a full freestyle stroke cycle. These clips serve as a reference when creating the animation in Blender.
