@@ -7,5 +7,5 @@
 # Reference videos for Blender animation
 [Is This The Easiest 1:10/100m Freestyle Ever?](https://www.youtube.com/watch?v=b-aG10Hv-NM) - by 'Effortless Swimming'
 
-[blender-swimmer]: ../img/blender-swimmer.mp4 "Swimmer in Blender"
+[blender-swimmer]: ../img/blender_swimmer.mp4 "Swimmer in Blender"
 [social-media-pic]: ../img/pause.svg "test"
