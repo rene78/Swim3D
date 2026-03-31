@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { Timer } from 'three/addons/misc/Timer.js';
 import { ViewportGizmo } from "three-viewport-gizmo"; //Cube at the bottom left to set certain views
@@ -11,8 +12,8 @@ document.body.appendChild(stats.dom);
 
 // 2. Scene Setup
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xe0e0e0);
-scene.fog = new THREE.Fog(0xe0e0e0, 10, 50);
+scene.background = new THREE.Color(0x87CEEB);//Color of 'sky'. Currently blue
+scene.fog = new THREE.Fog(0xe0e0e0, 10, 50);//Color of fog. Currently gray
 
 // 3. Camera Setup
 const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
@@ -35,6 +36,7 @@ const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.5);
 hemiLight.position.set(0, 20, 0);
 scene.add(hemiLight);
 
+/*
 const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
 dirLight.position.set(3, 10, 10);
 dirLight.castShadow = true;
@@ -47,11 +49,12 @@ dirLight.shadow.camera.bottom = -5;
 dirLight.shadow.camera.left = -5;
 dirLight.shadow.camera.right = 5;
 scene.add(dirLight);
+*/
 
 // Floor
 const mesh = new THREE.Mesh(
   new THREE.PlaneGeometry(100, 100),
-  new THREE.MeshPhongMaterial({ color: 0xcbcbcb, depthWrite: false })
+  new THREE.MeshPhongMaterial({ color: 0x00ffff, depthWrite: false }) //color of floor. Currently 'aqua'
 );
 mesh.rotation.x = -Math.PI / 2;
 mesh.receiveShadow = true;
@@ -78,8 +81,11 @@ const timer = new Timer();
 // 8. Load Model
 const loader = new GLTFLoader();
 
+// Set the meshopt decoder so it can read compressed data
+loader.setMeshoptDecoder(MeshoptDecoder);
+
 loader.load(
-  'swimmer.glb',
+  './3D_Assets/swimmer.glb',
   (gltf) => {
     const model = gltf.scene;
 
@@ -213,17 +219,17 @@ function stepAnimation(stepAmount) {
   if (!animationAction || !mixer) return;
 
   const duration = animationAction.getClip().duration;
-  console.log(animationAction.time);
+  // console.log(animationAction.time);
   let newTime = animationAction.time + stepAmount;
 
   // Loop back around gracefully when stepping past start or end bounds
   newTime = ((newTime % duration) + duration) % duration;
   /* Examples for the code line above. Assumption: Clip length is 3s, stepAmount is 0.1s
-  1. Animation is currently at 2.8s
+  Example 1: Animation is currently at 2.8s
     newTime = animationAction.time + stepAmount = 2.8s + 0.1s = 2.9s
     newTime = ((newTime % duration) + duration) % duration = ((2.9s % 3s) + 3s) % 3s = (2.9s + 3s) % 3s = 5.9s % 3s
     newTime = 2.9s
-  2. Animation is currently at 2.95s
+  Example 2: Animation is currently at 2.95s
     newTime = animationAction.time + stepAmount = 2.95s + 0.1s = 3.05s
     newTime = ((newTime % duration) + duration) % duration = ((3.05s % 3s) + 3s) % 3s = (0.05s + 3s) % 3s = 3.05s % 3s
     newTime = 0.05s
