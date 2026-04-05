@@ -1,0 +1,321 @@
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { Water } from 'three/addons/objects/Water.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { Timer } from 'three/addons/misc/Timer.js';
+import { ViewportGizmo } from "three-viewport-gizmo"; //Cube at the bottom left to set certain views
+import Stats from 'stats';//Displays the current fps of the animation
+
+// 1. Stats Setup
+const stats = new Stats();
+document.body.appendChild(stats.dom);
+
+// 2. Scene Setup
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x87CEEB);//Color of 'sky'. Currently blue
+scene.fog = new THREE.Fog(0xe0e0e0, 10, 50);//Color of fog. Currently gray
+
+// Water
+const waterGeometry = new THREE.PlaneGeometry(100, 100);
+const water = new Water(
+  waterGeometry,
+  {
+    textureWidth: 512,
+    textureHeight: 512,
+    waterNormals: new THREE.TextureLoader().load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/waternormals.jpg', function (texture) {
+      texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+    }),
+    sunDirection: new THREE.Vector3(),
+    sunColor: 0xffffff,
+    waterColor: 0x006994,
+    distortionScale: 3.7,
+    fog: scene.fog !== undefined
+  }
+);
+water.rotation.x = -Math.PI / 2;
+water.position.y = 0; // Water surface at ground level
+
+// Make water transparent so swimmer is visible from above
+water.material.uniforms.alpha = { value: 0.3 };
+water.material.transparent = true;
+water.material.depthWrite = true;
+water.material.needsUpdate = true;
+
+scene.add(water);
+
+// 3. Camera Setup
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+camera.position.set(0, 2, 5);
+
+// 4. Renderer Setup
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Softer shadow edges
+
+// Crucial for .glb models so colors don't look washed out:
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; // More realistic lighting
+document.body.appendChild(renderer.domElement);
+
+// 5. Lighting
+const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.5);
+hemiLight.position.set(0, 20, 0);
+scene.add(hemiLight);
+
+/*
+const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
+dirLight.position.set(3, 10, 10);
+dirLight.castShadow = true;
+
+// Increase shadow resolution and area
+dirLight.shadow.mapSize.width = 1024;
+dirLight.shadow.mapSize.height = 1024;
+dirLight.shadow.camera.top = 5;
+dirLight.shadow.camera.bottom = -5;
+dirLight.shadow.camera.left = -5;
+dirLight.shadow.camera.right = 5;
+scene.add(dirLight);
+*/
+
+// Floor
+const mesh = new THREE.Mesh(
+  new THREE.PlaneGeometry(100, 100),
+  new THREE.MeshPhongMaterial({ color: 0x00ffff, depthWrite: false }) //color of floor. Currently 'aqua'
+);
+mesh.rotation.x = -Math.PI / 2;
+mesh.receiveShadow = true;
+scene.add(mesh);
+
+// 6. Controls
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.target.set(0, 1, 0);
+
+//Initialize viewport gizmo
+const gizmo = new ViewportGizmo(camera, renderer, {
+  type: "cube",
+  placement: "bottom-left"
+});
+gizmo.attachControls(controls);
+
+// 7. Animation Global Variables
+let mixer;
+let animationAction;
+let currentPlaybackSpeed = 1.0; // Keep track of speed state
+const timer = new Timer();
+
+// 8. Load Model
+const loader = new GLTFLoader();
+
+// Set the meshopt decoder so it can read compressed data
+loader.setMeshoptDecoder(MeshoptDecoder);
+
+loader.load(
+  './3D_Assets/swimmer.glb',
+  (gltf) => {
+    const model = gltf.scene;
+
+    // Position the camera for a nice isometric view of the swimmer on page load
+
+    // 1. Determine a safe viewing distance.
+    let baseDistance = 3.0;
+
+    // 2. Adjust for mobile (portrait screens) so the swimmer isn't cut off horizontally
+    if (camera.aspect < 1.0) {
+      baseDistance /= camera.aspect;
+      baseDistance *= 0.85; // Slight tweak so it doesn't zoom out too aggressively
+    }
+
+    // 3. Define the center of the swimmer (1.3 meter along the X axis). This will be the location where the camera aims at.
+    // This step is needed because the swimmer's origin is right between his feet. We need to move along the x-axis to the center of the body (i.e. about 1.3m)
+    const targetPos = new THREE.Vector3(1.3, 0, 0);
+
+    // 4. Calculate the specific angle direction (+45 deg X, +45 deg Y equivalent)
+    // The vector (1, 1, 1) perfectly gives us an isometric view on Top, Front, and Right.
+    const dir = new THREE.Vector3(1, 1, 1).normalize();
+
+    // 5. Apply position to camera: 
+    // We start at the targetPos (1.3, 0, 0) and push the camera backwards along our perfect diagonal direction
+    camera.position.copy(targetPos).addScaledVector(dir, baseDistance);
+
+    // Tell the orbit controls to pivot perfectly around the swimmer's center
+    controls.target.copy(targetPos);
+
+    // Orient camera to look exactly at the swimmer's center, not (0,0,0)
+    camera.lookAt(targetPos);
+    controls.update();
+
+    // Enable shadow casting and receiving
+    model.traverse((object) => {
+      if (object.isMesh) {
+        object.castShadow = true;
+        object.receiveShadow = true;
+      }
+    });
+
+    scene.add(model);
+
+    //Load the first animation of model and play it
+    if (gltf.animations && gltf.animations.length > 0) {
+      mixer = new THREE.AnimationMixer(model);
+      console.log(gltf.animations);
+      animationAction = mixer.clipAction(gltf.animations[0]);
+      animationAction.timeScale = currentPlaybackSpeed; // Apply speed on load
+      animationAction.play();
+    }
+
+    document.getElementById('loading').style.display = 'none';
+  },
+  (xhr) => {
+    console.log(`${(xhr.loaded / xhr.total * 100).toFixed(2)}% loaded`);
+  },
+  (error) => {
+    console.error('An error happened', error);
+    document.getElementById('loading').innerText = 'Error loading model.';
+  }
+);
+
+// 9. Playback Controls
+const playPauseBtn = document.getElementById('playPauseBtn');
+const stepForwardBtn = document.getElementById('stepForwardBtn');
+const stepBackwardBtn = document.getElementById('stepBackwardBtn');
+
+// Speed Controls
+const speedToggleBtn = document.getElementById('speedToggleBtn');
+const speedMenu = document.getElementById('speedMenu');
+const speedOptions = document.querySelectorAll('.speed-option');
+
+// Toggle Speed Menu visibility
+speedToggleBtn.addEventListener('click', (e) => {
+  e.stopPropagation(); // Prevent document click listener from firing immediately
+  speedMenu.classList.toggle('visible');
+});
+
+// Handle Speed Selection
+speedOptions.forEach(option => {
+  option.addEventListener('click', (e) => {
+    e.stopPropagation();
+
+    // 1. Get the newly selected speed
+    const selectedSpeed = parseFloat(option.getAttribute('data-speed'));
+    currentPlaybackSpeed = selectedSpeed;
+
+    // 2. Apply it to the 3D model if loaded
+    if (animationAction) {
+      animationAction.timeScale = currentPlaybackSpeed;
+    }
+
+    // 3. Update UI (highlight green)
+    speedOptions.forEach(opt => opt.classList.remove('active'));
+    option.classList.add('active');
+
+    // 4. Close the menu
+    speedMenu.classList.remove('visible');
+  });
+});
+
+// Close Speed Menu when clicking anywhere else on the page
+document.addEventListener('click', (e) => {
+  if (speedMenu.classList.contains('visible') && !speedMenu.contains(e.target)) {
+    speedMenu.classList.remove('visible');
+  }
+});
+
+// Play / Pause Logic
+playPauseBtn.addEventListener('click', () => {
+  if (!animationAction) return; // Prevent errors if clicked before model loads
+
+  // Toggle paused state
+  animationAction.paused = !animationAction.paused; //Set 'animationAction.paused' to the opposite of what it was before this line of code.
+
+  // Update UI classes
+  if (animationAction.paused) {
+    playPauseBtn.classList.replace('pause', 'play');
+    playPauseBtn.setAttribute('title', 'Play animation');
+    stepForwardBtn.classList.add('visible');
+    stepBackwardBtn.classList.add('visible');
+  } else {
+    playPauseBtn.classList.replace('play', 'pause');
+    playPauseBtn.setAttribute('title', 'Pause animation');
+    stepForwardBtn.classList.remove('visible');
+    stepBackwardBtn.classList.remove('visible');
+  }
+});
+
+function stepAnimation(stepAmount) {
+  if (!animationAction || !mixer) return;
+
+  const duration = animationAction.getClip().duration;
+  // console.log(animationAction.time);
+  let newTime = animationAction.time + stepAmount;
+
+  // Loop back around gracefully when stepping past start or end bounds
+  newTime = ((newTime % duration) + duration) % duration;
+  /* Examples for the code line above. Assumption: Clip length is 3s, stepAmount is 0.1s
+  Example 1: Animation is currently at 2.8s
+    newTime = animationAction.time + stepAmount = 2.8s + 0.1s = 2.9s
+    newTime = ((newTime % duration) + duration) % duration = ((2.9s % 3s) + 3s) % 3s = (2.9s + 3s) % 3s = 5.9s % 3s
+    newTime = 2.9s
+  Example 2: Animation is currently at 2.95s
+    newTime = animationAction.time + stepAmount = 2.95s + 0.1s = 3.05s
+    newTime = ((newTime % duration) + duration) % duration = ((3.05s % 3s) + 3s) % 3s = (0.05s + 3s) % 3s = 3.05s % 3s
+    newTime = 0.05s
+  */
+
+  animationAction.time = newTime;
+
+  // Force animation mixer to evaluate the new current time instantly so the screen updates
+  mixer.update(0);
+}
+
+stepForwardBtn.addEventListener('click', () => stepAnimation(0.01));
+stepBackwardBtn.addEventListener('click', () => stepAnimation(-0.01));
+
+// Window Resize Handling
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  gizmo.update();
+});
+
+// 10. Animation Loop
+// The code below tells the browser to take a picture of the 3D scene 60 times a second (or whatever the refresh rate of the monitor is)
+function animate(timestamp) {
+  // 1. Tell the browser to run THIS function again on the next frame
+  // "requestAnimationFrame" is built into the web browser. Its only job is to say to the browser:
+  // "Hey, right before you draw the next picture on the screen, please run this specific block of code, i.e. the 'animate' function"
+
+  requestAnimationFrame(animate);
+
+  //Update the fps stats
+  stats.update();
+
+  // Update the timer with the native timestamp
+  timer.update(timestamp);
+
+  // Get the safe delta
+  const delta = timer.getDelta();
+
+  // 2. Move the swimmer model forward a tiny bit
+  if (mixer) mixer.update(delta);
+
+  controls.update();
+
+  // Update water animation (slowed down by factor of 0.3)
+  if (water) {
+    water.material.uniforms['time'].value += delta * 0.3;
+  }
+
+  // 3. Take the picture (render the current position of the 3D model to the screen)
+  renderer.render(scene, camera);
+
+  // 4. Render the viewport gizmo
+  gizmo.render();
+}
+
+// Start the loop
+requestAnimationFrame(animate);
