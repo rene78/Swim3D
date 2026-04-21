@@ -72,11 +72,13 @@ const gizmo = new ViewportGizmo(camera, renderer, {
 });
 gizmo.attachControls(controls);
 
-// 7. Animation Global Variables
+// 7. Animation & State Global Variables
 let mixer;
 let animationAction;
 let currentPlaybackSpeed = 1.0; // Keep track of speed state
 const timer = new Timer();
+let traceHandsMesh = null; // Will hold reference to the "Trace_Hands" mesh once loaded
+let traceHandsVisible = false; // Keep track of visibility state for Trace Hands
 
 // 8. Load Model
 const loader = new GLTFLoader();
@@ -88,9 +90,14 @@ loader.load(
   './3D_Assets/swimmer.glb',
   (gltf) => {
     const model = gltf.scene;
+    console.log('Model loaded:', model);
+
+    // Find the "Trace_Hands" mesh by name and store a reference to it for later toggling
+    traceHandsMesh = model.getObjectByName('Trace_Hands');
+    // Hide it by default on load
+    if (traceHandsMesh) traceHandsMesh.visible = false;
 
     // Position the camera for a nice isometric view of the swimmer on page load
-
     // 1. Determine a safe viewing distance.
     let baseDistance = 3.0;
 
@@ -152,6 +159,9 @@ loader.load(
 const playPauseBtn = document.getElementById('playPauseBtn');
 const stepForwardBtn = document.getElementById('stepForwardBtn');
 const stepBackwardBtn = document.getElementById('stepBackwardBtn');
+
+// Trace Hands Toggle
+const traceHandsBtn = document.getElementById('traceHandsBtn');
 
 // Speed Controls
 const speedToggleBtn = document.getElementById('speedToggleBtn');
@@ -243,6 +253,21 @@ function stepAnimation(stepAmount) {
 
 stepForwardBtn.addEventListener('click', () => stepAnimation(0.01));
 stepBackwardBtn.addEventListener('click', () => stepAnimation(-0.01));
+
+// Trace Hands Toggle Logic
+traceHandsBtn.addEventListener('click', () => {
+  if (!traceHandsMesh) return;
+  
+  traceHandsVisible = !traceHandsVisible;
+  traceHandsMesh.visible = traceHandsVisible;
+  
+  // Update button appearance
+  if (traceHandsVisible) {
+    traceHandsBtn.classList.add('active');
+  } else {
+    traceHandsBtn.classList.remove('active');
+  }
+});
 
 // Window Resize Handling
 window.addEventListener('resize', () => {
