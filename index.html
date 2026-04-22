@@ -35,33 +35,81 @@
 <body>
   <div id="loading">Loading 3D Model...</div>
 
-  <div id="controlsContainer">
-    <div id="speedControlWrapper">
-      <div id="speedMenu">
-        <button class="speed-option" data-speed="0.1">0.1</button>
-        <button class="speed-option" data-speed="0.25">0.25</button>
-        <button class="speed-option" data-speed="0.5">0.5</button>
-        <button class="speed-option active" data-speed="1.0">
-          1.0<br><span class="speed-label-normal">Normal</span>
-        </button>
+  <!-- Settings Menu Popup -->
+  <div id="settingsMenu" class="hidden">
+    <!-- Trace Hands -->
+    <div class="setting-row">
+      <div class="setting-label">
+        <svg fill="none" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+          <path style="fill:none;stroke:currentColor;stroke-width:3;stroke-dasharray:none;stroke-opacity:1"
+            d="M3.756 6.305c3.07-2.536 15.873.178 16.141 5.32.269 5.142-8.942 8.317-11.178 5.545S1.7 8.004 3.756 6.305Z" />
+        </svg>
+        <span>Trace Hands</span>
       </div>
+      <label class="switch">
+        <input type="checkbox" id="traceHandsToggle">
+        <span class="slider round"></span>
+      </label>
+    </div>
 
-      <button id="speedToggleBtn" title="Playback Speed" aria-label="Toggle Playback Speed">
-        <svg fill="currentColor" height="32" viewBox="0 0 24 24" width="32">
+    <!-- Water -->
+    <div class="setting-row">
+      <div class="setting-label">
+        <svg height="24" preserveAspectRatio="xMidYMid" viewBox="0 0 18 18" width="24"
+          xmlns="http://www.w3.org/2000/svg">
+          <path
+            style="fill:none;fill-opacity:1;fill-rule:nonzero;stroke:currentColor;stroke-width:.999641;stroke-linecap:square;stroke-dasharray:none;stroke-opacity:1"
+            d="M.684 13.064s.685-1.158 1.353-1.164c1.17-.01 1.78 2.958 3.467 2.958 1.561 0 2.315-2.945 3.525-2.95 1.283-.006 1.848 2.95 3.563 2.95 1.746 0 2.414-2.988 3.46-2.979.567.005 1.263 1.178 1.263 1.178M.685 9.272s.684-1.158 1.352-1.164c1.17-.01 1.78 2.958 3.467 2.958 1.561 0 2.315-2.945 3.525-2.95 1.283-.006 1.848 2.95 3.563 2.95 1.746 0 2.414-2.988 3.46-2.98.567.006 1.263 1.18 1.263 1.18M.685 5.23s.684-1.159 1.352-1.165c1.17-.01 1.78 2.958 3.467 2.958 1.561 0 2.315-2.945 3.525-2.95 1.283-.006 1.848 2.95 3.563 2.95 1.746 0 2.414-2.988 3.46-2.979.567.005 1.263 1.179 1.263 1.179" />
+        </svg>
+        <span>Water</span>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="waterToggle" checked>
+        <span class="slider round"></span>
+      </label>
+    </div>
+
+    <!-- Playback Speed Label -->
+    <div class="setting-row">
+      <div class="setting-label">
+        <svg fill="currentColor" height="24" viewBox="0 0 24 24" width="24">
           <path
             d="M12 1c1.44 0 2.87.28 4.21.83a11 11 0 0 1 3.45 2.27l-1.81 1.05A9 9 0 0 0 3 12a9 9 0 0 0 18-.00l-.01-.44a8.99 8.99 0 0 0-.14-1.20l1.81-1.05A11.00 11.00 0 0 1 10.51 22.9 11 11 0 0 1 12 1Zm7.08 6.25-7.96 3.25a1.74 1.74 0 1 0 1.73 2.99l6.8-5.26a.57.57 0 0 0-.56-.98Z">
           </path>
         </svg>
-      </button>
+        <span>Playback Speed</span>
+      </div>
     </div>
 
-    <button id="stepForwardBtn" class="step-btn" title="Step forward 0.01s" aria-label="Step forward 0.01s"></button>
-    <button id="playPauseBtn" class="pause" title="Pause animation" aria-label="Pause animation"></button>
+    <!-- Current Speed Display -->
+    <div class="speed-display" id="currentSpeedDisplay">1.00x</div>
+
+    <!-- Slider -->
+    <div class="slider-row">
+      <button class="slider-btn" id="speedMinusBtn">-</button>
+      <input type="range" id="speedSlider" min="0.1" max="1" step="0.05" value="1">
+      <button class="slider-btn" id="speedPlusBtn">+</button>
+    </div>
+
+    <!-- Preset Buttons -->
+    <div class="preset-row">
+      <button class="speed-preset" data-speed="0.1">0.1</button>
+      <button class="speed-preset" data-speed="0.25">0.25</button>
+      <button class="speed-preset" data-speed="0.5">0.5</button>
+      <button class="speed-preset active" data-speed="1.0">1.0<br><span
+          class="speed-label-normal">Standard</span></button>
+    </div>
+  </div>
+
+  <div id="controlsContainer">
     <button id="stepBackwardBtn" class="step-btn" title="Step backward 0.01s" aria-label="Step backward 0.01s"></button>
-    <button id="traceHandsBtn" title="Toggle Trace_Hands visibility" aria-label="Toggle Trace_Hands visibility">
-      <svg fill="none" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
-        <path style="fill:none;stroke:#000;stroke-width:3;stroke-dasharray:none;stroke-opacity:1"
-          d="M3.756 6.305c3.07-2.536 15.873.178 16.141 5.32.269 5.142-8.942 8.317-11.178 5.545S1.7 8.004 3.756 6.305Z" />
+    <button id="playPauseBtn" class="pause" title="Pause animation" aria-label="Pause animation"></button>
+    <button id="stepForwardBtn" class="step-btn" title="Step forward 0.01s" aria-label="Step forward 0.01s"></button>
+
+    <button id="settingsBtn" title="Settings" aria-label="Settings">
+      <svg fill="currentColor" height="28" viewBox="0 0 24 24" width="28" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.73 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.08.62-.08.94s.03.64.08.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.49-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
       </svg>
     </button>
   </div>

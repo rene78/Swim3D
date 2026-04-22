@@ -36,21 +36,6 @@ const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.5);
 hemiLight.position.set(0, 20, 0);
 scene.add(hemiLight);
 
-/*
-const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
-dirLight.position.set(3, 10, 10);
-dirLight.castShadow = true;
-
-// Increase shadow resolution and area
-dirLight.shadow.mapSize.width = 1024;
-dirLight.shadow.mapSize.height = 1024;
-dirLight.shadow.camera.top = 5;
-dirLight.shadow.camera.bottom = -5;
-dirLight.shadow.camera.left = -5;
-dirLight.shadow.camera.right = 5;
-scene.add(dirLight);
-*/
-
 // Floor
 const mesh = new THREE.Mesh(
   new THREE.PlaneGeometry(100, 100),
@@ -77,8 +62,9 @@ let mixer;
 let animationAction;
 let currentPlaybackSpeed = 1.0; // Keep track of speed state
 const timer = new Timer();
-let traceHandsMesh = null; // Will hold reference to the "Trace_Hands" mesh once loaded
-let traceHandsVisible = false; // Keep track of visibility state for Trace Hands
+
+let traceHandsMesh = null; // Will hold reference to the "Trace_Hands" mesh
+let waterMesh = null; // Will hold reference to the "Water" mesh
 
 // 8. Load Model
 const loader = new GLTFLoader();
@@ -92,10 +78,18 @@ loader.load(
     const model = gltf.scene;
     console.log('Model loaded:', model);
 
-    // Find the "Trace_Hands" mesh by name and store a reference to it for later toggling
+    // Grab elements used for initial visibility
+    const traceHandsToggle = document.getElementById('traceHandsToggle');
+    const waterToggle = document.getElementById('waterToggle');
+
+    // Setup Mesh references and align visibility with toggles defaults
     traceHandsMesh = model.getObjectByName('Trace_Hands');
-    // Hide it by default on load
-    if (traceHandsMesh) traceHandsMesh.visible = false;
+    // Trace_Hands toggle is UNCHECKED by default, thus mesh is HIDDEN on load
+    if (traceHandsMesh) traceHandsMesh.visible = traceHandsToggle.checked;
+    
+    waterMesh = model.getObjectByName('Water');
+    // Water toggle is CHECKED by default, thus mesh is VISIBLE on load
+    if (waterMesh) waterMesh.visible = waterToggle.checked;
 
     // Position the camera for a nice isometric view of the swimmer on page load
     // 1. Determine a safe viewing distance.
@@ -155,63 +149,108 @@ loader.load(
   }
 );
 
-// 9. Playback Controls
+// 9. Playback Controls & Settings Integration
+
+// Basic Controls
 const playPauseBtn = document.getElementById('playPauseBtn');
 const stepForwardBtn = document.getElementById('stepForwardBtn');
 const stepBackwardBtn = document.getElementById('stepBackwardBtn');
+const settingsBtn = document.getElementById('settingsBtn');
 
-// Trace Hands Toggle
-const traceHandsBtn = document.getElementById('traceHandsBtn');
+// Settings Menu Elements
+const settingsMenu = document.getElementById('settingsMenu');
+const traceHandsToggle = document.getElementById('traceHandsToggle');
+const waterToggle = document.getElementById('waterToggle');
+const currentSpeedDisplay = document.getElementById('currentSpeedDisplay');
+const speedSlider = document.getElementById('speedSlider');
+const speedMinusBtn = document.getElementById('speedMinusBtn');
+const speedPlusBtn = document.getElementById('speedPlusBtn');
+const speedPresets = document.querySelectorAll('.speed-preset');
 
-// Speed Controls
-const speedToggleBtn = document.getElementById('speedToggleBtn');
-const speedMenu = document.getElementById('speedMenu');
-const speedOptions = document.querySelectorAll('.speed-option');
-
-// Toggle Speed Menu visibility
-speedToggleBtn.addEventListener('click', (e) => {
-  e.stopPropagation(); // Prevent document click listener from firing immediately
-  speedMenu.classList.toggle('visible');
+// --- Toggling Settings Popup ---
+settingsBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  settingsMenu.classList.toggle('visible');
 });
 
-// Handle Speed Selection
-speedOptions.forEach(option => {
-  option.addEventListener('click', (e) => {
-    e.stopPropagation();
-
-    // 1. Get the newly selected speed
-    const selectedSpeed = parseFloat(option.getAttribute('data-speed'));
-    currentPlaybackSpeed = selectedSpeed;
-
-    // 2. Apply it to the 3D model if loaded
-    if (animationAction) {
-      animationAction.timeScale = currentPlaybackSpeed;
-    }
-
-    // 3. Update UI (highlight green)
-    speedOptions.forEach(opt => opt.classList.remove('active'));
-    option.classList.add('active');
-
-    // 4. Close the menu
-    speedMenu.classList.remove('visible');
-  });
-});
-
-// Close Speed Menu when clicking anywhere else on the page
+// Close Settings Menu when clicking outside of it
 document.addEventListener('click', (e) => {
-  if (speedMenu.classList.contains('visible') && !speedMenu.contains(e.target)) {
-    speedMenu.classList.remove('visible');
+  // Only close if the click is outside both the menu and the button that opens it
+  if (settingsMenu.classList.contains('visible') && !settingsMenu.contains(e.target) && !settingsBtn.contains(e.target)) {
+    settingsMenu.classList.remove('visible');
   }
 });
 
-// Play / Pause Logic
+// Prevent menu close when interacting with sliders/toggles inside it
+settingsMenu.addEventListener('click', (e) => {
+  e.stopPropagation();
+});
+
+
+// --- Settings Adjustments ---
+
+// Mesh Toggles
+traceHandsToggle.addEventListener('change', (e) => {
+  if (traceHandsMesh) traceHandsMesh.visible = e.target.checked;
+});
+
+waterToggle.addEventListener('change', (e) => {
+  if (waterMesh) waterMesh.visible = e.target.checked;
+});
+
+// Speed Configuration
+function updateSpeed(newSpeed) {
+  // Clamp values strictly between limits 0.1 and 1
+  newSpeed = Math.max(0.1, Math.min(1, newSpeed));
+
+  currentPlaybackSpeed = newSpeed;
+  speedSlider.value = newSpeed;
+  currentSpeedDisplay.innerText = newSpeed.toFixed(2) + 'x';
+
+  // Apply directly to the animation
+  if (animationAction) {
+    animationAction.timeScale = currentPlaybackSpeed;
+  }
+
+  // Highlight the respective preset pill button, if one perfectly matches
+  speedPresets.forEach(btn => {
+    if (parseFloat(btn.getAttribute('data-speed')) === newSpeed) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+}
+
+// Slider Drag Update
+speedSlider.addEventListener('input', (e) => {
+  updateSpeed(parseFloat(e.target.value));
+});
+
+// Step Increment Update Buttons (+ / -)
+speedMinusBtn.addEventListener('click', () => {
+  updateSpeed(parseFloat(speedSlider.value) - 0.05);
+});
+
+speedPlusBtn.addEventListener('click', () => {
+  updateSpeed(parseFloat(speedSlider.value) + 0.05);
+});
+
+// Specific Preset Pill Buttons
+speedPresets.forEach(btn => {
+  btn.addEventListener('click', () => {
+    updateSpeed(parseFloat(btn.getAttribute('data-speed')));
+  });
+});
+
+// --- Play / Pause Logic ---
 playPauseBtn.addEventListener('click', () => {
   if (!animationAction) return; // Prevent errors if clicked before model loads
 
   // Toggle paused state
   animationAction.paused = !animationAction.paused; //Set 'animationAction.paused' to the opposite of what it was before this line of code.
 
-  // Update UI classes
+  // Update UI classes (Step forward/backward buttons are automatically shown/hidden via CSS classes here)
   if (animationAction.paused) {
     playPauseBtn.classList.replace('pause', 'play');
     playPauseBtn.setAttribute('title', 'Play animation');
@@ -254,21 +293,6 @@ function stepAnimation(stepAmount) {
 stepForwardBtn.addEventListener('click', () => stepAnimation(0.01));
 stepBackwardBtn.addEventListener('click', () => stepAnimation(-0.01));
 
-// Trace Hands Toggle Logic
-traceHandsBtn.addEventListener('click', () => {
-  if (!traceHandsMesh) return;
-  
-  traceHandsVisible = !traceHandsVisible;
-  traceHandsMesh.visible = traceHandsVisible;
-  
-  // Update button appearance
-  if (traceHandsVisible) {
-    traceHandsBtn.classList.add('active');
-  } else {
-    traceHandsBtn.classList.remove('active');
-  }
-});
-
 // Window Resize Handling
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
@@ -298,12 +322,13 @@ function animate(timestamp) {
   // 2. Move the swimmer model forward a tiny bit
   if (mixer) mixer.update(delta);
 
+  // 3. Update the orbit controls (needed to update the viewport gizmo)
   controls.update();
 
-  // 3. Take the picture (render the current position of the 3D model to the screen)
+  // 4. Take the picture (render the current position of the 3D model to the screen)
   renderer.render(scene, camera);
 
-  // 4. Render the viewport gizmo
+  // 5. Render the viewport gizmo
   gizmo.render();
 }
 
