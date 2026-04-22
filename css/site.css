@@ -201,6 +201,15 @@ canvas {
   box-shadow: 0px 8px 24px rgba(0,0,0,0.2);
 }
 
+/* Center the settings menu on small screens and make it full width with some margin on the sides for better usability on mobile devices */
+@media (max-width: 450px) {
+  #settingsMenu {
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+  }
+}
+
 #settingsMenu.visible {
   opacity: 1;
   pointer-events: auto;
