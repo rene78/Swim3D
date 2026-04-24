@@ -66,6 +66,23 @@ const timer = new Timer();
 let traceHandsMesh = null; // Will hold reference to the "Trace_Hands" mesh
 let waterMesh = null; // Will hold reference to the "Water" mesh
 
+// Basic Controls
+const playPauseBtn = document.getElementById('play-pause-btn');
+const stepForwardBtn = document.getElementById('step-forward-btn');
+const stepBackwardBtn = document.getElementById('step-backward-btn');
+const settingsBtn = document.getElementById('settings-btn');
+
+// Settings Menu Elements
+const settingsMenu = document.getElementById('settings-menu');
+const traceHandsToggle = document.getElementById('trace-hands-toggle');
+const waterToggle = document.getElementById('waterToggle');
+const currentSpeedDisplay = document.getElementById('current-speed-display');
+const speedSlider = document.getElementById('speed-slider');
+const speedMinusBtn = document.getElementById('speed-minus-btn');
+const speedPlusBtn = document.getElementById('speed-plus-btn');
+const speedPresets = document.querySelectorAll('.speed-preset');
+const progressSlider = document.querySelector('.progress-slider');
+
 // 8. Load Model
 const loader = new GLTFLoader();
 
@@ -76,17 +93,13 @@ loader.load(
   './3D_Assets/swimmer.glb',
   (gltf) => {
     const model = gltf.scene;
-    console.log('Model loaded:', model);
-
-    // Grab elements used for initial visibility
-    const traceHandsToggle = document.getElementById('traceHandsToggle');
-    const waterToggle = document.getElementById('waterToggle');
+    // console.log('Model loaded:', model);
 
     // Setup Mesh references and align visibility with toggles defaults
     traceHandsMesh = model.getObjectByName('Trace_Hands');
     // Trace_Hands toggle is UNCHECKED by default, thus mesh is HIDDEN on load
     if (traceHandsMesh) traceHandsMesh.visible = traceHandsToggle.checked;
-    
+
     waterMesh = model.getObjectByName('Water');
     // Water toggle is CHECKED by default, thus mesh is VISIBLE on load
     if (waterMesh) waterMesh.visible = waterToggle.checked;
@@ -136,6 +149,11 @@ loader.load(
       animationAction = mixer.clipAction(gltf.animations[0]);
       animationAction.timeScale = currentPlaybackSpeed; // Apply speed on load
       animationAction.play();
+
+      // Initialize the slider max duration based on the loaded animation clip length
+      // console.log('Animation length:', animationAction.getClip().duration);
+      progressSlider.max = animationAction.getClip().duration;
+
     }
 
     document.getElementById('loading').style.display = 'none';
@@ -150,22 +168,6 @@ loader.load(
 );
 
 // 9. Playback Controls & Settings Integration
-
-// Basic Controls
-const playPauseBtn = document.getElementById('playPauseBtn');
-const stepForwardBtn = document.getElementById('stepForwardBtn');
-const stepBackwardBtn = document.getElementById('stepBackwardBtn');
-const settingsBtn = document.getElementById('settingsBtn');
-
-// Settings Menu Elements
-const settingsMenu = document.getElementById('settingsMenu');
-const traceHandsToggle = document.getElementById('traceHandsToggle');
-const waterToggle = document.getElementById('waterToggle');
-const currentSpeedDisplay = document.getElementById('currentSpeedDisplay');
-const speedSlider = document.getElementById('speedSlider');
-const speedMinusBtn = document.getElementById('speedMinusBtn');
-const speedPlusBtn = document.getElementById('speedPlusBtn');
-const speedPresets = document.querySelectorAll('.speed-preset');
 
 // --- Toggling Settings Popup ---
 settingsBtn.addEventListener('click', (e) => {
@@ -243,12 +245,28 @@ speedPresets.forEach(btn => {
   });
 });
 
+// Progress Slider Update
+
+progressSlider.addEventListener('input', (e) => {
+  if (!animationAction || !mixer) return;
+
+  const newTime = parseFloat(e.target.value);
+  animationAction.time = newTime;
+
+  // Force animation mixer to evaluate the new current time instantly so the screen updates
+  mixer.update(0);
+});
+
 // --- Play / Pause Logic ---
 playPauseBtn.addEventListener('click', () => {
   if (!animationAction) return; // Prevent errors if clicked before model loads
 
   // Toggle paused state
   animationAction.paused = !animationAction.paused; //Set 'animationAction.paused' to the opposite of what it was before this line of code.
+  
+  // Set value of progress slider to current animation time
+  // console.log('Animation paused at:', animationAction.time);
+  progressSlider.value = animationAction.time;
 
   // Update UI classes (Step forward/backward buttons are automatically shown/hidden via CSS classes here)
   if (animationAction.paused) {
@@ -256,11 +274,13 @@ playPauseBtn.addEventListener('click', () => {
     playPauseBtn.setAttribute('title', 'Play animation');
     stepForwardBtn.classList.add('visible');
     stepBackwardBtn.classList.add('visible');
+    progressSlider.classList.add('visible');
   } else {
     playPauseBtn.classList.replace('play', 'pause');
     playPauseBtn.setAttribute('title', 'Pause animation');
     stepForwardBtn.classList.remove('visible');
     stepBackwardBtn.classList.remove('visible');
+    progressSlider.classList.remove('visible');
   }
 });
 
@@ -284,7 +304,11 @@ function stepAnimation(stepAmount) {
     newTime = 0.05s
   */
 
+  //Update the animation time to the new stepped time
   animationAction.time = newTime;
+
+  // Update progress slider to reflect new time
+  progressSlider.value = newTime;
 
   // Force animation mixer to evaluate the new current time instantly so the screen updates
   mixer.update(0);

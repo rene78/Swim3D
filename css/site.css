@@ -22,7 +22,7 @@ canvas {
 }
 
 /* Container for all playback controls */
-#controlsContainer {
+#controls-container {
   position: absolute;
   bottom: 20px;
   left: 0;
@@ -36,7 +36,7 @@ canvas {
 }
 
 /* Play/Pause Button */
-#playPauseBtn {
+#play-pause-btn {
   width: 50px;
   height: 50px;
   border: 2px solid #000;
@@ -46,12 +46,12 @@ canvas {
   transition: all 0.2s ease;
 }
 
-#playPauseBtn:hover {
+#play-pause-btn:hover {
   background-color: rgba(0, 0, 0, 0.1);
 }
 
 /* Pause symbol - two vertical bars */
-#playPauseBtn.pause {
+#play-pause-btn.pause {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -60,8 +60,8 @@ canvas {
 
 
 /* Both bars of the pause symbol */
-#playPauseBtn.pause::before,
-#playPauseBtn.pause::after {
+#play-pause-btn.pause::before,
+#play-pause-btn.pause::after {
   content: '';
   width: 6px;
   height: 20px;
@@ -70,14 +70,14 @@ canvas {
 }
 
 /* Play symbol - arrow pointing right */
-#playPauseBtn.play {
+#play-pause-btn.play {
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 /* The arrow of the play button */
-#playPauseBtn.play::before {
+#play-pause-btn.play::before {
   content: '';
   width: 0;
   height: 0;
@@ -115,7 +115,7 @@ canvas {
 }
 
 /* The arrow > of the step forward button */
-#stepForwardBtn::before {
+#step-forward-btn::before {
   content: '';
   width: 0;
   height: 0;
@@ -126,7 +126,7 @@ canvas {
 }
 
 /* The vertical bar of the step forward button */
-#stepForwardBtn::after {
+#step-forward-btn::after {
   content: '';
   width: 3px;
   height: 12px;
@@ -136,7 +136,7 @@ canvas {
 }
 
 /* The arrow < of the step backward button */
-#stepBackwardBtn::before {
+#step-backward-btn::before {
   content: '';
   width: 3px;
   height: 12px;
@@ -146,7 +146,7 @@ canvas {
 }
 
 /* The vertical bar of the step backward button */
-#stepBackwardBtn::after {
+#step-backward-btn::after {
   content: '';
   width: 0;
   height: 0;
@@ -157,7 +157,7 @@ canvas {
 }
 
 /* Settings Button */
-#settingsBtn {
+#settings-btn {
   width: 40px;
   height: 40px;
   border: none;
@@ -170,7 +170,7 @@ canvas {
   color: #000;
 }
 
-#settingsBtn:hover {
+#settings-btn:hover {
   background-color: rgba(0, 0, 0, 0.1);
   border-radius: 50%;
 }
@@ -179,7 +179,7 @@ canvas {
    Settings Menu 
    ------------------------------------- */
 
-#settingsMenu {
+#settings-menu {
   position: absolute;
   bottom: 85px;
   right: 25px;
@@ -203,14 +203,14 @@ canvas {
 
 /* Center the settings menu on small screens and make it full width with some margin on the sides for better usability on mobile devices */
 @media (max-width: 450px) {
-  #settingsMenu {
+  #settings-menu {
     left: 0;
     right: 0;
     margin: 0 auto;
   }
 }
 
-#settingsMenu.visible {
+#settings-menu.visible {
   opacity: 1;
   pointer-events: auto;
 }
@@ -318,7 +318,7 @@ input:checked + .slider:before {
   background-color: rgba(255, 255, 255, 0.4);
 }
 
-#speedSlider {
+#speed-slider {
   flex-grow: 1;
   appearance: none;
   -webkit-appearance: none;
@@ -326,7 +326,7 @@ input:checked + .slider:before {
   height: 20px; /* Provides a better touch zone */
 }
 
-#speedSlider::-webkit-slider-runnable-track {
+#speed-slider::-webkit-slider-runnable-track {
   width: 100%;
   height: 4px;
   cursor: pointer;
@@ -334,7 +334,7 @@ input:checked + .slider:before {
   border-radius: 2px;
 }
 
-#speedSlider::-webkit-slider-thumb {
+#speed-slider::-webkit-slider-thumb {
   height: 18px;
   width: 18px;
   border-radius: 50%;
@@ -344,7 +344,7 @@ input:checked + .slider:before {
   margin-top: -7px;
 }
 
-#speedSlider::-moz-range-track {
+#speed-slider::-moz-range-track {
   width: 100%;
   height: 4px;
   cursor: pointer;
@@ -352,7 +352,7 @@ input:checked + .slider:before {
   border-radius: 2px;
 }
 
-#speedSlider::-moz-range-thumb {
+#speed-slider::-moz-range-thumb {
   height: 18px;
   width: 18px;
   border-radius: 50%;
@@ -398,4 +398,22 @@ input:checked + .slider:before {
   font-size: 0.75rem;
   opacity: 0.8;
   margin-top: 2px;
+}
+
+.progress-slider {
+  position: absolute;
+  bottom: 80px;  /* Position it dynamically above the controls container */
+  right: 10px;
+  width: 207px;
+  height: 30px; /* Increased height for a better touch zone on mobile */
+  margin: 17px 0;
+  opacity: 0;
+  pointer-events: none; /* Prevents interaction when invisible */
+  transition: opacity 0.2s ease; /* Smooth fade in/out */
+  cursor: pointer;
+}
+
+.progress-slider.visible {
+  opacity: 1;
+  pointer-events: auto; /* Re-enables interaction when visible */
 }
