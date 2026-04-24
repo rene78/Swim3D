@@ -192,7 +192,7 @@ canvas {
   display: flex;
   flex-direction: column;
   gap: 15px;
-  z-index: 20;
+  z-index: 1001; /* Make sure that the settings menu is above all other elements, including the viewport gizmo (z-index=1000) */
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s ease, transform 0.2s ease;
