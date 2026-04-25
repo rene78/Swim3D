@@ -21,7 +21,7 @@ The project breaks down the freestyle stroke cycle into a clean, easy-to-study 3
 - Realistic freestyle stroke cycle
 - Clean visualization for analysis and learning
 - Runs directly in the browser
-- Can be used offline ('Add to Home Screen' in mobile browser, 'Install' button on desktop browsers. See [screenshot] (https://github.com/rene78/Swim3D/blob/main/img/pwa.webp))
+- Can be used offline ('Add to Home Screen' in mobile browser, 'Install' button on desktop browsers. See [screenshot](https://github.com/rene78/Swim3D/blob/main/img/pwa.webp)
 
 ---
 
@@ -64,7 +64,8 @@ We are actively looking for help creating new swimming animations:
 - Starts and underwater phases
 
 If you enjoy character animation or biomechanics, this is a great project to contribute to.
-[Swimmer in Blender](https://github.com/user-attachments/assets/dceabf87-5430-4cc2-a3a5-e59d4d5ed238)
+
+https://github.com/user-attachments/assets/50ee00c4-9aaf-4654-9929-2c41ddc45559
 
 ---
 
