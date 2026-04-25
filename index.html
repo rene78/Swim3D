@@ -28,8 +28,29 @@
         }
     </script>
 
-  <!-- Application script - MUST BE LAST since it depends on the others -->
+  <!-- Application script - MUST BE LAST since it depends on the other libraries -->
   <script src='js/site.js' type='module' defer></script>
+
+  <!-- PWA Meta Tags -->
+  <meta name="theme-color" content="#87CEEB"> <!-- Matches the Three.js sky color -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Swim3D">
+
+  <!-- App Registration Script for PWA -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(registration => {
+            console.log('ServiceWorker registration successful with scope: ', registration.scope);
+          })
+          .catch(err => {
+            console.log('ServiceWorker registration failed: ', err);
+          });
+      });
+    }
+  </script>
 </head>
 
 <body>
@@ -102,7 +123,8 @@
   </div>
 
   <div id="controls-container">
-    <button id="step-backward-btn" class="step-btn" title="Step backward 0.01s" aria-label="Step backward 0.01s"></button>
+    <button id="step-backward-btn" class="step-btn" title="Step backward 0.01s"
+      aria-label="Step backward 0.01s"></button>
     <button id="play-pause-btn" class="pause" title="Pause animation" aria-label="Pause animation"></button>
     <button id="step-forward-btn" class="step-btn" title="Step forward 0.01s" aria-label="Step forward 0.01s"></button>
 
