@@ -21,7 +21,7 @@ The project breaks down the freestyle stroke cycle into a clean, easy-to-study 3
 - Realistic freestyle stroke cycle
 - Clean visualization for analysis and learning
 - Runs directly in the browser
-- Can be used offline ('Add to Home Screen' in mobile browser, 'Install' button on desktop browsers. See [screenshot](https://github.com/rene78/Swim3D/blob/main/img/pwa.webp)
+- Can be used offline ('Add to Home Screen' in mobile browser, 'Install' button on desktop browsers. See [screenshot](https://github.com/rene78/Swim3D/blob/main/img/pwa.webp))
 
 ---
 
