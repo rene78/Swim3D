@@ -327,11 +327,11 @@ playPauseBtn.addEventListener('click', () => {
 
   // Update UI classes (Step forward/backward buttons are automatically shown/hidden via CSS classes here)
   if (animationAction.paused) {
-    playPauseBtn.classList.replace('pause', 'play');
-    playPauseBtn.setAttribute('title', 'Play animation');
-    stepForwardBtn.classList.add('visible');
-    stepBackwardBtn.classList.add('visible');
-    progressSlider.classList.add('visible');
+    playPauseBtn.classList.replace('pause', 'play'); // Replace 'pause' class with 'play' to show play icon
+    playPauseBtn.setAttribute('title', 'Play animation'); // Update tooltip to indicate the new action when hovering over the button
+    stepForwardBtn.classList.add('visible'); // Show step forward button when paused
+    stepBackwardBtn.classList.add('visible'); // Show step backward button when paused
+    progressSlider.classList.add('visible'); // Show progress slider when paused
   } else {
     playPauseBtn.classList.replace('play', 'pause');
     playPauseBtn.setAttribute('title', 'Pause animation');

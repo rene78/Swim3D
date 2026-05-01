@@ -20,19 +20,40 @@ canvas {
   color: #333;
   pointer-events: none;
 }
+/* #region CSS RELATED TO PLAYBACK CONTROLS AND SETTINGS BUTTON */
 
 /* Container for all playback controls */
 #controls-container {
   position: absolute;
   bottom: 20px;
-  left: 0;
-  right: 0;
+  right: 15px;
   display: flex;
-  flex-direction: row;
-  justify-content: end;
-  align-items: center;
-  gap: 20px;
+  flex-direction: column;
+  gap: 30px;
   z-index: 10;
+}
+
+/* Progress slider */
+.progress-slider {
+  width: 100%;
+  height: 30px;
+  accent-color: #0067db;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  cursor: pointer;
+}
+
+.progress-slider.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Aligns all the buttons horizontally */
+.controls-row {
+  display: flex;
+  align-items: center;
+  gap: 20px; /* Horizontal space between the buttons */
 }
 
 /* Play/Pause Button */
@@ -58,7 +79,6 @@ canvas {
   gap: 6px;
 }
 
-
 /* Both bars of the pause symbol */
 #play-pause-btn.pause::before,
 #play-pause-btn.pause::after {
@@ -76,7 +96,7 @@ canvas {
   align-items: center;
 }
 
-/* The arrow of the play button */
+/* The arrow ▷ of the play button */
 #play-pause-btn.play::before {
   content: '';
   width: 0;
@@ -114,7 +134,7 @@ canvas {
   border-radius: 50%;
 }
 
-/* The arrow > of the step forward button */
+/* The arrow ▷ of the step forward button */
 #step-forward-btn::before {
   content: '';
   width: 0;
@@ -125,7 +145,7 @@ canvas {
   margin-left: 2px;
 }
 
-/* The vertical bar of the step forward button */
+/* The vertical | bar of the step forward button */
 #step-forward-btn::after {
   content: '';
   width: 3px;
@@ -135,7 +155,7 @@ canvas {
   border-radius: 1px;
 }
 
-/* The arrow < of the step backward button */
+/* The arrow ◁ of the step backward button */
 #step-backward-btn::before {
   content: '';
   width: 3px;
@@ -145,7 +165,7 @@ canvas {
   border-radius: 1px;
 }
 
-/* The vertical bar of the step backward button */
+/* The vertical bar | of the step backward button */
 #step-backward-btn::after {
   content: '';
   width: 0;
@@ -174,10 +194,9 @@ canvas {
   background-color: rgba(255, 255, 255, 0.1);
   border-radius: 50%;
 }
+/* #endregion */
 
-/* -------------------------------------
-   Settings Menu 
-   ------------------------------------- */
+/* #region CSS RELATED TO SETTINGS MENU */
 
 #settings-menu {
   position: absolute;
@@ -255,6 +274,7 @@ canvas {
   transition: .4s;
 }
 
+/* The thumb of the switch */
 .slider:before {
   position: absolute;
   content: "";
@@ -269,7 +289,7 @@ canvas {
 }
 
 input:checked + .slider {
-  background-color: #34C759;
+  background-color: #0067db;
 }
 
 input:checked + .slider:before {
@@ -399,21 +419,4 @@ input:checked + .slider:before {
   opacity: 0.8;
   margin-top: 2px;
 }
-
-.progress-slider {
-  position: absolute;
-  bottom: 60px;  /* Position it dynamically inside the controls container */
-  right: 10px;
-  width: 207px;
-  height: 30px; /* Increased height for a better touch zone on mobile */
-  margin: 17px 0;
-  opacity: 0;
-  pointer-events: none; /* Prevents interaction when invisible */
-  transition: opacity 0.2s ease; /* Smooth fade in/out */
-  cursor: pointer;
-}
-
-.progress-slider.visible {
-  opacity: 1;
-  pointer-events: auto; /* Re-enables interaction when visible */
-}
+/* #endregion */

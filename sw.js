@@ -6,7 +6,7 @@
  */
 
 // 1. Configuration: Name your cache and list every local file you want available offline
-const CACHE_NAME = 'swim3d-cache-v1';
+const CACHE_NAME = 'swim3d-cache-v2';
 
 const ASSETS_TO_CACHE = [
   './',                   // The root (index.html)
