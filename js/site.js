@@ -1,26 +1,31 @@
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { Timer } from 'three/addons/misc/Timer.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'; //GLTFLoader is a utility provided by Three.js to load 3D models in the GLTF/GLB format.
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js'; //Meshoptimizer is a library for compressing 3D geometry data, which helps reduce file sizes and improve loading times for complex models. By using the MeshoptDecoder, we can efficiently decode compressed geometry data in .glb files, allowing for faster loading and smoother performance when rendering the swimmer model.
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js'; //Allows the user to rotate, zoom, and pan the camera around the scene using mouse or touch input, providing an interactive way to explore the 3D model.
+import { Timer } from 'three/addons/misc/Timer.js'; //Utility for tracking time and calculating deltas between frames, which is essential for smooth animations that are independent of frame rate.
 import { ViewportGizmo } from "three-viewport-gizmo"; //Cube at the bottom left to set certain views
 import Stats from 'stats';//Displays the current fps of the animation
+
+// Post-Processing Imports
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js'; //EffectComposer is a utility that allows us to apply post-processing effects (like bloom/glow) to the rendered scene.
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js'; //RenderPass is a specific type of pass that renders the scene as-is, which can then be used as the base for further post-processing effects.
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'; //UnrealBloomPass is a specific post-processing effect that creates a bloom/glow around bright areas of the scene, which we will use to make the water look like it's glowing.
 
 // 1. Stats Setup
 const stats = new Stats();
 document.body.appendChild(stats.dom);
 
 // 2. Scene Setup
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x87CEEB);//Color of 'sky'. Currently blue
-scene.fog = new THREE.Fog(0xe0e0e0, 10, 50);//Color of fog. Currently gray
+const scene = new THREE.Scene(); // This is the container that holds all the 3D objects, lights, and cameras. Think of it as the "stage" where everything happens.
 
 // 3. Camera Setup
-const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
-camera.position.set(0, 2, 5);
+// PerspectiveCamera mimics the way the human eye sees the world, with objects appearing smaller as they are farther away.
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100); // FOV, Aspect Ratio, Near Clipping, Far Clipping
+camera.position.set(0, 2, 5); // Start with a default position. We'll adjust this later once we know the model's dimensions to get a perfect isometric view.
 
 // 4. Renderer Setup
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+// WebGLRenderer is the most common renderer that uses the GPU for fast rendering of 3D graphics. It creates a canvas element in the HTML where the 3D scene will be drawn.
+const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.shadowMap.enabled = true;
@@ -31,19 +36,61 @@ renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping; // More realistic lighting
 document.body.appendChild(renderer.domElement);
 
+// 4b. Post-Processing setup (Bloom / Glow)
+
+// 1. Get the size and pixel ratio
+const size = renderer.getSize(new THREE.Vector2());
+const pixelRatio = renderer.getPixelRatio();
+
+// 2. Create a Render Target with multisampling (MSAA)
+// We create a custom render target that supports multisampling (antialiasing) for smoother edges,
+// which is especially beneficial when applying bloom effects.
+// 'samples: 4' is usually the sweet spot for quality vs performance
+const renderTarget = new THREE.WebGLRenderTarget(
+  size.width * pixelRatio, //Width of the render target in pixels, adjusted for device pixel ratio for crisp rendering on high-DPI screens
+  size.height * pixelRatio, //Height of the render target in pixels, adjusted for device pixel ratio
+  {
+    type: THREE.HalfFloatType, // Good for Bloom/HDR
+    samples: 4                 // This enables the multisampling (MSAA)
+  }
+);
+
+const renderScene = new RenderPass(scene, camera); // This pass renders the original scene into a texture that can then be used for post-processing effects. It essentially captures the current view of the 3D scene as a base layer for further effects to be applied on top of it.
+const composer = new EffectComposer(renderer, renderTarget); // Post-processing composer
+
+composer.addPass(renderScene);// First render the scene normally
+
+// Bloom pass to make the water glow. These settings are tuned to only make the water glow, not the rest of the scene.
+const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
+bloomPass.threshold = 0.2; // Adjusted so only emissive/very bright things glow
+bloomPass.strength = 1.0; // How intense the bloom/glow effect is
+bloomPass.radius = 0.5; // How far the bloom/glow spreads out
+
+composer.addPass(bloomPass); // Then apply bloom/glow on top of it
+
 // 5. Lighting
-const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.5);
+// Hemisphere light for base visibility
+const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.4);
 hemiLight.position.set(0, 20, 0);
 scene.add(hemiLight);
 
-// Floor
-const mesh = new THREE.Mesh(
-  new THREE.PlaneGeometry(100, 100),
-  new THREE.MeshPhongMaterial({ color: 0x00ffff, depthWrite: false }) //color of floor. Currently 'aqua'
-);
-mesh.rotation.x = -Math.PI / 2;
-mesh.receiveShadow = true;
-scene.add(mesh);
+// Bottom directional light to simulate light coming from below the water surface, giving a sense of depth and volume to the swimmer
+const dirLightBottom = new THREE.DirectionalLight(0xffffff, 1.0);
+dirLightBottom.position.set(-5, -10, 0);
+scene.add(dirLightBottom);
+
+// For development: Visualize the directional light's direction and position
+// const helperDirLightBottom = new THREE.DirectionalLightHelper(dirLightBottom);
+// scene.add( helperDirLightBottom );
+
+// Top directional light to simulate light coming from above the water surface
+const dirLightTop = new THREE.DirectionalLight(0xffffff, 0.5);
+dirLightTop.position.set(-5, 5, 0);
+scene.add(dirLightTop);
+
+// For development: Visualize the directional light's direction and position
+// const helperDirLightTop = new THREE.DirectionalLightHelper(dirLightTop);
+// scene.add( helperDirLightTop );
 
 // 6. Controls
 const controls = new OrbitControls(camera, renderer.domElement);
@@ -93,15 +140,32 @@ loader.load(
   './3D_Assets/swimmer.glb',
   (gltf) => {
     const model = gltf.scene;
-    // console.log('Model loaded:', model);
 
-    // Setup Mesh references and align visibility with toggles defaults
+    model.traverse((object) => {
+      if (object.isMesh) {
+        // ONLY override the water material. This way we can have a custom glowing material for the water, while keeping the original materials for the swimmer and other parts of the scene intact.
+        if (object.name === 'Water') {
+          object.material = new THREE.MeshPhysicalMaterial({
+            color: 0xffffff,          // Base white color
+            emissive: 0x0033aa,       // Glow color! This is what the bloom picks up
+            emissiveIntensity: 1.5,   // How intensely it glows
+            transparent: true,
+            opacity: 0.05,            // Semi-transparent
+            roughness: 0.1,           // Glossy
+            metalness: 0.2,
+            side: THREE.DoubleSide,   // Visible from underneath
+            depthWrite: false
+          });
+        }
+      }
+    });
+
     traceHandsMesh = model.getObjectByName('Trace_Hands');
-    // Trace_Hands toggle is UNCHECKED by default, thus mesh is HIDDEN on load
+    // 'Trace Hands' toggle is UNCHECKED by default, thus mesh is HIDDEN on load
     if (traceHandsMesh) traceHandsMesh.visible = traceHandsToggle.checked;
 
     waterMesh = model.getObjectByName('Water');
-    // Water toggle is CHECKED by default, thus mesh is VISIBLE on load
+    // 'Water' toggle is CHECKED by default, thus mesh is VISIBLE on load
     if (waterMesh) waterMesh.visible = waterToggle.checked;
 
     // Position the camera for a nice isometric view of the swimmer on page load
@@ -131,16 +195,11 @@ loader.load(
 
     // Orient camera to look exactly at the swimmer's center, not (0,0,0)
     camera.lookAt(targetPos);
+
+    // Important to call this after changing camera position and target so that the viewport gizmo updates to match the new camera orientation
     controls.update();
 
-    // Enable shadow casting and receiving
-    model.traverse((object) => {
-      if (object.isMesh) {
-        object.castShadow = true;
-        object.receiveShadow = true;
-      }
-    });
-
+    // Add the model to the scene so it becomes visible
     scene.add(model);
 
     //Load the first animation of model and play it
@@ -153,7 +212,6 @@ loader.load(
       // Initialize the slider max duration based on the loaded animation clip length
       // console.log('Animation length:', animationAction.getClip().duration);
       progressSlider.max = animationAction.getClip().duration;
-
     }
 
     document.getElementById('loading').style.display = 'none';
@@ -246,7 +304,6 @@ speedPresets.forEach(btn => {
 });
 
 // Progress Slider Update
-
 progressSlider.addEventListener('input', (e) => {
   if (!animationAction || !mixer) return;
 
@@ -321,7 +378,8 @@ stepBackwardBtn.addEventListener('click', () => stepAnimation(-0.01));
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setSize(window.innerWidth, window.innerHeight); // Adjust the renderer size to match the new window dimensions
+  composer.setSize(window.innerWidth, window.innerHeight); // Important for post-processing to also adjust to new size
   gizmo.update();
 });
 
@@ -349,8 +407,8 @@ function animate(timestamp) {
   // 3. Update the orbit controls (needed to update the viewport gizmo)
   controls.update();
 
-  // 4. Take the picture (render the current position of the 3D model to the screen)
-  renderer.render(scene, camera);
+  // 4. Render the scene with post-processing effects (bloom/glow)
+  composer.render();
 
   // 5. Render the viewport gizmo
   gizmo.render();

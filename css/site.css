@@ -39,7 +39,7 @@ canvas {
 #play-pause-btn {
   width: 50px;
   height: 50px;
-  border: 2px solid #000;
+  border: 2px solid #ffffff;
   border-radius: 50%;
   background-color: transparent;
   cursor: pointer;
@@ -47,7 +47,7 @@ canvas {
 }
 
 #play-pause-btn:hover {
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Pause symbol - two vertical bars */
@@ -65,7 +65,7 @@ canvas {
   content: '';
   width: 6px;
   height: 20px;
-  background-color: #000;
+  background-color: #ffffff;
   border-radius: 1px;
 }
 
@@ -83,7 +83,7 @@ canvas {
   height: 0;
   border-top: 10px solid transparent;
   border-bottom: 10px solid transparent;
-  border-left: 16px solid #000;
+  border-left: 16px solid #ffffff;
   margin-left: 4px;
 }
 
@@ -110,7 +110,7 @@ canvas {
 }
 
 .step-btn:hover {
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: rgba(255, 255, 255, 0.1);
   border-radius: 50%;
 }
 
@@ -121,7 +121,7 @@ canvas {
   height: 0;
   border-top: 6px solid transparent;
   border-bottom: 6px solid transparent;
-  border-left: 10px solid #000;
+  border-left: 10px solid #ffffff;
   margin-left: 2px;
 }
 
@@ -130,7 +130,7 @@ canvas {
   content: '';
   width: 3px;
   height: 12px;
-  background-color: #000;
+  background-color: #ffffff;
   margin-left: 3px;
   border-radius: 1px;
 }
@@ -140,7 +140,7 @@ canvas {
   content: '';
   width: 3px;
   height: 12px;
-  background-color: #000;
+  background-color: #ffffff;
   margin-right: 3px;
   border-radius: 1px;
 }
@@ -152,7 +152,7 @@ canvas {
   height: 0;
   border-top: 6px solid transparent;
   border-bottom: 6px solid transparent;
-  border-right: 10px solid #000;
+  border-right: 10px solid #ffffff;
   margin-right: 2px;
 }
 
@@ -167,11 +167,11 @@ canvas {
   display: flex;
   justify-content: center;
   align-items: center;
-  color: #000;
+  color: #ffffff;
 }
 
 #settings-btn:hover {
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: rgba(255, 255, 255, 0.1);
   border-radius: 50%;
 }
 
@@ -402,7 +402,7 @@ input:checked + .slider:before {
 
 .progress-slider {
   position: absolute;
-  bottom: 80px;  /* Position it dynamically above the controls container */
+  bottom: 60px;  /* Position it dynamically inside the controls container */
   right: 10px;
   width: 207px;
   height: 30px; /* Increased height for a better touch zone on mobile */
