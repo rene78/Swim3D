@@ -140,6 +140,7 @@ loader.load(
   './3D_Assets/swimmer.glb',
   (gltf) => {
     const model = gltf.scene;
+    // console.log('Model loaded:', model);
 
     model.traverse((object) => {
       if (object.isMesh) {
@@ -168,33 +169,7 @@ loader.load(
     // 'Water' toggle is CHECKED by default, thus mesh is VISIBLE on load
     if (waterMesh) waterMesh.visible = waterToggle.checked;
 
-    // Position the camera for a nice isometric view of the swimmer on page load
-    // 1. Determine a safe viewing distance.
-    let baseDistance = 3.0;
-
-    // 2. Adjust for mobile (portrait screens) so the swimmer isn't cut off horizontally
-    if (camera.aspect < 1.0) {
-      baseDistance /= camera.aspect;
-      baseDistance *= 0.85; // Slight tweak so it doesn't zoom out too aggressively
-    }
-
-    // 3. Define the center of the swimmer (1.3 meter along the X axis). This will be the location where the camera aims at.
-    // This step is needed because the swimmer's origin is right between his feet. We need to move along the x-axis to the center of the body (i.e. about 1.3m)
-    const targetPos = new THREE.Vector3(1.3, 0, 0);
-
-    // 4. Calculate the specific angle direction (+45 deg X, +45 deg Y equivalent)
-    // The vector (1, 1, 1) perfectly gives us an isometric view on Top, Front, and Right.
-    const dir = new THREE.Vector3(1, 1, 1).normalize();
-
-    // 5. Apply position to camera: 
-    // We start at the targetPos (1.3, 0, 0) and push the camera backwards along our perfect diagonal direction
-    camera.position.copy(targetPos).addScaledVector(dir, baseDistance);
-
-    // Tell the orbit controls to pivot perfectly around the swimmer's center
-    controls.target.copy(targetPos);
-
-    // Orient camera to look exactly at the swimmer's center, not (0,0,0)
-    camera.lookAt(targetPos);
+    setIsoView(); // Set the camera to a nice isometric view of the swimmer on load
 
     // Important to call this after changing camera position and target so that the viewport gizmo updates to match the new camera orientation
     controls.update();
@@ -225,6 +200,39 @@ loader.load(
   }
 );
 
+// Set the camera to a nice isometric view of the swimmer on load, so it's framed well from the start.
+// This function calculates the optimal camera position based on the model's dimensions and the screen aspect ratio to ensure the entire
+// swimmer fits perfectly in view without being cut off, regardless of the device or screen size.
+function setIsoView() {
+  // Position the camera for a nice isometric view of the swimmer on page load
+  // 1. Determine a safe viewing distance.
+  let baseDistance = 3.0;
+
+  // 2. Adjust for mobile (portrait screens) so the swimmer isn't cut off horizontally
+  if (camera.aspect < 1.0) {
+    baseDistance /= camera.aspect;
+    baseDistance *= 0.85; // Slight tweak so it doesn't zoom out too aggressively
+  }
+
+  // 3. Define the center of the swimmer (1.3 meter along the X axis). This will be the location where the camera aims at.
+  // This step is needed because the swimmer's origin is right between his feet. We need to move along the x-axis to the center of the body (i.e. about 1.3m)
+  const targetPos = new THREE.Vector3(1.3, 0, 0);
+
+  // 4. Calculate the specific angle direction (+45 deg X, +45 deg Y equivalent)
+  // The vector (1, 1, 1) perfectly gives us an isometric view on Top, Front, and Right.
+  const dir = new THREE.Vector3(1, 1, 1).normalize();
+
+  // 5. Apply position to camera: 
+  // We start at the targetPos (1.3, 0, 0) and push the camera backwards along our perfect diagonal direction
+  camera.position.copy(targetPos).addScaledVector(dir, baseDistance);
+
+  // Tell the orbit controls to pivot perfectly around the swimmer's center
+  controls.target.copy(targetPos);
+
+  // Orient camera to look exactly at the swimmer's center, not (0,0,0)
+  camera.lookAt(targetPos);
+}
+
 // 9. Playback Controls & Settings Integration
 
 // --- Toggling Settings Popup ---
@@ -245,7 +253,6 @@ document.addEventListener('click', (e) => {
 settingsMenu.addEventListener('click', (e) => {
   e.stopPropagation();
 });
-
 
 // --- Settings Adjustments ---
 
@@ -315,12 +322,12 @@ progressSlider.addEventListener('input', (e) => {
 });
 
 // --- Play / Pause Logic ---
-playPauseBtn.addEventListener('click', () => {
+function togglePlayPause() {
   if (!animationAction) return; // Prevent errors if clicked before model loads
 
   // Toggle paused state
   animationAction.paused = !animationAction.paused; //Set 'animationAction.paused' to the opposite of what it was before this line of code.
-  
+
   // Set value of progress slider to current animation time
   // console.log('Animation paused at:', animationAction.time);
   progressSlider.value = animationAction.time;
@@ -328,18 +335,21 @@ playPauseBtn.addEventListener('click', () => {
   // Update UI classes (Step forward/backward buttons are automatically shown/hidden via CSS classes here)
   if (animationAction.paused) {
     playPauseBtn.classList.replace('pause', 'play'); // Replace 'pause' class with 'play' to show play icon
-    playPauseBtn.setAttribute('title', 'Play animation'); // Update tooltip to indicate the new action when hovering over the button
+    playPauseBtn.setAttribute('title', 'Play animation <Spacebar>'); // Update tooltip to indicate the new action when hovering over the button
     stepForwardBtn.classList.add('visible'); // Show step forward button when paused
     stepBackwardBtn.classList.add('visible'); // Show step backward button when paused
     progressSlider.classList.add('visible'); // Show progress slider when paused
   } else {
     playPauseBtn.classList.replace('play', 'pause');
-    playPauseBtn.setAttribute('title', 'Pause animation');
+    playPauseBtn.setAttribute('title', 'Pause animation <Spacebar>');
     stepForwardBtn.classList.remove('visible');
     stepBackwardBtn.classList.remove('visible');
     progressSlider.classList.remove('visible');
   }
-});
+}
+
+// Trigger toggle on button click
+playPauseBtn.addEventListener('click', togglePlayPause);
 
 function stepAnimation(stepAmount) {
   if (!animationAction || !mixer) return;
@@ -373,6 +383,107 @@ function stepAnimation(stepAmount) {
 
 stepForwardBtn.addEventListener('click', () => stepAnimation(0.01));
 stepBackwardBtn.addEventListener('click', () => stepAnimation(-0.01));
+
+// Shortcut keys
+document.addEventListener('keydown', (e) => {
+  // Spacebar to toggle play/pause
+  if (e.code === 'Space') {
+    e.preventDefault(); // Prevent default spacebar scrolling behavior
+    togglePlayPause();
+  }
+  // 'w' key to toggle water visibility
+  else if (e.key.toLowerCase() === 'w') {
+    waterToggle.checked = !waterToggle.checked;
+    waterToggle.dispatchEvent(new Event('change')); // Trigger the change event to toggle visibility
+  }
+  // 't' key to toggle trace hands visibility
+  else if (e.key.toLowerCase() === 't') {
+    traceHandsToggle.checked = !traceHandsToggle.checked;
+    traceHandsToggle.dispatchEvent(new Event('change'));
+  }
+  // Number keys for specific views: front (2), back (8), left (4), right (6), top (5), iso (0)
+  else if (e.key >= '0' && e.key <= '9') {
+    const newCameraPos = setCameraPositionToFitScreen(e.key);
+    // console.log('New camera position for front view:', newCameraPos[0], newCameraPos[1], newCameraPos[2]);
+    if (newCameraPos) camera.position.set(newCameraPos[0], newCameraPos[1], newCameraPos[2]);
+    controls.update(); // Update controls to reflect changes
+  }
+
+  //Left arrow and right arrow keys to step backward and forward in the animation when paused
+  else if (e.code === 'ArrowRight' && animationAction && animationAction.paused) {
+    stepAnimation(0.01);
+  }
+  else if (e.code === 'ArrowLeft' && animationAction && animationAction.paused) {
+    stepAnimation(-0.01);
+  }
+});
+
+// Set the camera to a perfect position to fit the entire swimmer in view based on the selected viewing direction, the model's dimensions, and the screen aspect ratio.
+// Viewing direction can be "front" (2, z), "left" (4, -x), "top" (5, y), "right" (6, x), "back" (8, -z), or "iso" (0)
+function setCameraPositionToFitScreen(viewingDirection) {
+  // Dimensions below are the maximum extents during freestyle stroke in all 3 coordinate directions.
+  const swimmerLen = 2.3; // Estimated width/length of the swimmer with stretched out arms in meters (from fingertips to toes). Dimension along the X axis.
+  const swimmerHeight = 0.7; // Estimated height/thickness of the swimmer (head to fingertips). Dimension along the Y axis.
+  const swimmerWidth = 0.9; // Estimated max span of the swimmer (from elbow of one arm to the other). Dimension along the Z axis.
+  const targetX = swimmerLen / 2; // Focus on the center of the swimmer's body (1.15m), not the origin (between the feet)
+
+  // Set the focus point to the center of the swimmer. This is the same for all views.
+  controls.target.set(targetX, 0, 0);
+
+  const fovInRadians = (camera.fov * Math.PI) / 180; // The vertical field of view of the camera in radians
+  const aspect = camera.aspect; // Canvas width divided by height
+
+  // Helper to calculate trig distance
+  // We need to fit two dimensions: the horizontal (h) and vertical (v) extents of the swimmer.
+  // Depending on the aspect ratio and the viewing direction, either the horizontal or vertical dimension may be the limiting factor
+  // that determines how far back we need to position the camera to fit everything in view.
+  // See image in readme.md for a visual explanation of this.
+  const getFitDist = (dimHoriz, dimVert) => {
+    const distV = (dimVert / 2) / Math.tan(fovInRadians / 2);
+    const distH = (dimHoriz / 2) / Math.tan(fovInRadians / 2) / aspect;// We divide by aspect for the horizontal distance because the horizontal field of view can be wider (desktop) or narrower (mobile) than the vertical field of view.
+    return Math.max(distV, distH) * 1.2; // Return the value that is the furthest away, with a small padding multiplier so the swimmer isn't touching the edges of the screen
+  };
+
+  let totalDistance = 0;
+
+  if (viewingDirection === '2' || viewingDirection === '8') {
+    // FRONT/BACK VIEW: Looking at X (Length) and Y (Height)
+    // We must stand back at least half the Width (Z) to be outside the body
+    const depthOffset = swimmerWidth / 2;
+    totalDistance = depthOffset + getFitDist(swimmerLen, swimmerHeight);
+
+    return [targetX, 0, viewingDirection === '2' ? totalDistance : -totalDistance];
+  }
+
+  else if (viewingDirection === '6' || viewingDirection === '4') {
+    // SIDE VIEWS (Head/Feet): Looking at Z (Width) and Y (Height)
+    // We must stand back at least half the Length (X) to be outside the fingers/toes
+    const depthOffset = swimmerLen / 2;
+    totalDistance = depthOffset + getFitDist(swimmerWidth, swimmerHeight);
+
+    return [viewingDirection === '6' ? targetX + totalDistance : targetX - totalDistance, 0, 0];
+  }
+
+  else if (viewingDirection === '5') {
+    // TOP VIEW: Looking at X (Length) and Z (Width)
+    // We must stand back at least half the Height (Y)
+    const depthOffset = swimmerHeight / 2;
+    totalDistance = depthOffset + getFitDist(swimmerLen, swimmerWidth);
+
+    return [targetX, totalDistance, 0];
+  }
+
+  else if (viewingDirection === '0') {
+    // ISOMETRIC VIEW: Looking at X, Y, and Z equally (diagonal)
+    setIsoView(); // We already have a function that perfectly sets the isometric view based on the model's dimensions and screen aspect ratio, so we can just call that here instead of recalculating everything.
+    return null; // Return null since the camera position is already set within the setIsoView function
+  }
+
+  else {
+    console.log('Invalid viewing direction. Use "0" (iso), "2" (front), "8" (back), "4" (left), "6" (right) or "5" (top).');
+    return null;
+  }
+}
 
 // Window Resize Handling
 window.addEventListener('resize', () => {

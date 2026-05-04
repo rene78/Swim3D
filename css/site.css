@@ -53,7 +53,7 @@ canvas {
 .controls-row {
   display: flex;
   align-items: center;
-  gap: 20px; /* Horizontal space between the buttons */
+  gap: 17px; /* Horizontal space between the buttons */
 }
 
 /* Play/Pause Button */
