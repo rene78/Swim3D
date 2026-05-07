@@ -20,6 +20,180 @@ canvas {
   color: #333;
   pointer-events: none;
 }
+
+.logo-top-left {
+  position: fixed;
+  top: 0;
+  left: 0;
+  opacity: 0.5;
+  width: 100px;
+  margin: 10px;
+}
+
+/* #region CSS RELATED TO WELCOME INFOBOX */
+.infobox-container {
+  text-align: center;
+  position: fixed;
+  z-index: 1013;
+  top: 0px;
+  left: 0;
+  height: 100vh;
+  height: -webkit-fill-available;
+  /* mobile viewport bug fix */
+  width: 320px;
+  border-radius: 0 30px 30px 0;
+  background-color: white;
+  padding: 20px;
+  box-sizing: border-box;
+  transition-property: left top;
+  transition-duration: 200ms;
+  transition-timing-function: linear;
+  box-shadow: 0 1px 2px rgb(60 64 67 / 30%), 0 2px 6px 2px rgb(60 64 67 / 15%);
+}
+
+.welcome-infobox {
+  overflow: auto;
+  height: 100%;
+  scrollbar-width: none;
+}
+
+@media (max-width: 1200px) {
+  .infobox-container {
+    width: 100%;
+    height: 40vh;
+    border-radius: 0 0 30px 30px;
+  }
+}
+
+.hide-welcome {
+  left: -320px;
+}
+
+@media (max-width: 1200px) {
+  .hide-welcome {
+    left: auto;
+    top: -40vh;
+  }
+}
+
+.expand-button {
+  width: 25px;
+  height: 50px;
+  top: calc(50% - 25px);
+  position: absolute;
+  right: -26px;
+  border-radius: 0 10px 10px 0;
+  opacity: 0.7;
+  border: 0;
+  box-shadow: -2px 2px 2px rgb(60 64 67 / 30%);
+  cursor: pointer;
+  border-right: 1px solid #4a4242;
+  background: #ffffff 7px/7px 10px no-repeat;
+  padding: 0;
+}
+
+.expand-button:hover {
+  opacity: .95;
+}
+
+@media (max-width: 1200px) {
+  .expand-button {
+    width: 50px;
+    height: 25px;
+    left: calc(50% - 25px);
+    position: absolute;
+    top: 40vh;
+    border-radius: 0 0 10px 10px;
+  }
+}
+
+.arrow-image {
+  vertical-align: middle;
+}
+
+.mirror-image {
+  transform: scaleX(-1);
+}
+
+@media (max-width: 1200px) {
+  .arrow-image {
+    rotate: 90deg;
+  }
+}
+
+.logo {
+  width: 260px;
+  margin: 25px 0;
+}
+
+.welcome-infobox-heading {
+  text-align: center;
+  font-size: 25px;
+  margin: 5px;
+  font-weight: bold;
+  color: #4DC3FA;
+}
+
+.welcome-infobox-text {
+  text-align: left;
+}
+
+.welcome-infobox-links {
+  width: fit-content;
+  margin: 10px auto;
+  display: flex;
+  align-items: center;
+  border: 2px solid;
+  border-radius: 5px;
+  padding: 5px;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  text-align: left;
+}
+
+.github-link {
+  border-color: black;
+}
+
+.welcome-infobox-links:hover {
+  border: 2px solid #919191;
+}
+
+.thumbnails {
+  width: 25px;
+  margin-right: 7px;
+}
+
+.welcome-infobox-subheading {
+  margin-top: 15px;
+  margin-bottom: 5px;
+  font-size: 20px;
+}
+
+.welcome-infobox-dont-show {
+  text-align: left;
+}
+
+.reference-videos-table {
+  margin: 10px auto;
+}
+
+.reference-videos-table tr {
+  border-bottom: 1px solid black;
+  text-align: left;
+}
+
+.reference-videos-table td {
+padding: 0 5px;
+}
+
+.reference-videos-table td:nth-child(1) {
+    border-right: 1px solid black;
+}
+
+/* #endregion */
+
 /* #region CSS RELATED TO PLAYBACK CONTROLS AND SETTINGS BUTTON */
 
 /* Container for all playback controls */
@@ -29,7 +203,7 @@ canvas {
   right: 15px;
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: 20px;
   z-index: 10;
 }
 
@@ -53,7 +227,8 @@ canvas {
 .controls-row {
   display: flex;
   align-items: center;
-  gap: 17px; /* Horizontal space between the buttons */
+  gap: 15px;
+  /* Horizontal space between the buttons */
 }
 
 /* Play/Pause Button */
@@ -194,6 +369,7 @@ canvas {
   background-color: rgba(255, 255, 255, 0.1);
   border-radius: 50%;
 }
+
 /* #endregion */
 
 /* #region CSS RELATED TO SETTINGS MENU */
@@ -211,13 +387,14 @@ canvas {
   display: flex;
   flex-direction: column;
   gap: 15px;
-  z-index: 1001; /* Make sure that the settings menu is above all other elements, including the viewport gizmo (z-index=1000) */
+  z-index: 1001;
+  /* Make sure that the settings menu is above all other elements, including the viewport gizmo (z-index=1000) */
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s ease, transform 0.2s ease;
   transform-origin: bottom center;
   box-sizing: border-box;
-  box-shadow: 0px 8px 24px rgba(0,0,0,0.2);
+  box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.2);
 }
 
 /* Center the settings menu on small screens and make it full width with some margin on the sides for better usability on mobile devices */
@@ -269,7 +446,10 @@ canvas {
 .slider {
   position: absolute;
   cursor: pointer;
-  top: 0; left: 0; right: 0; bottom: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background-color: rgba(255, 255, 255, 0.2);
   transition: .4s;
 }
@@ -283,16 +463,16 @@ canvas {
   left: 2px;
   bottom: 2px;
   background-color: white;
-  border: 1px solid rgba(0,0,0,0.1);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   transition: .4s;
   box-sizing: border-box;
 }
 
-input:checked + .slider {
+input:checked+.slider {
   background-color: #0067db;
 }
 
-input:checked + .slider:before {
+input:checked+.slider:before {
   transform: translateX(22px);
   border: none;
 }
@@ -343,7 +523,8 @@ input:checked + .slider:before {
   appearance: none;
   -webkit-appearance: none;
   background: transparent;
-  height: 20px; /* Provides a better touch zone */
+  height: 20px;
+  /* Provides a better touch zone */
 }
 
 #speed-slider::-webkit-slider-runnable-track {
@@ -419,4 +600,5 @@ input:checked + .slider:before {
   opacity: 0.8;
   margin-top: 2px;
 }
+
 /* #endregion */

@@ -11,9 +11,22 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js'; 
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js'; //RenderPass is a specific type of pass that renders the scene as-is, which can then be used as the base for further post-processing effects.
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'; //UnrealBloomPass is a specific post-processing effect that creates a bloom/glow around bright areas of the scene, which we will use to make the water look like it's glowing.
 
+//Hide the welcome infobox, if hideWelcomeInfoboxCheckboxSelected equals "true" in local storage
+hideWelcomeInfoboxOnStartup();
+function hideWelcomeInfoboxOnStartup() {
+  let hideWelcomeInfoboxCheckboxSelected = localStorage.getItem("hideWelcomeInfoboxCheckboxSelected");
+  // console.log(hideWelcomeInfoboxCheckboxSelected);
+  if (hideWelcomeInfoboxCheckboxSelected === "true") {
+    hideWelcomeInfobox();
+    //Check the checkbox
+    let radio = document.querySelector("#dont-show");
+    radio.checked = true;
+  }
+};
+
 // 1. Stats Setup
 const stats = new Stats();
-document.body.appendChild(stats.dom);
+// document.body.appendChild(stats.dom);
 
 // 2. Scene Setup
 const scene = new THREE.Scene(); // This is the container that holds all the 3D objects, lights, and cameras. Think of it as the "stage" where everything happens.
@@ -34,6 +47,8 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Softer shadow edges
 // Crucial for .glb models so colors don't look washed out:
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping; // More realistic lighting
+
+// Add the renderer's canvas element to the HTML document so it becomes visible on the page
 document.body.appendChild(renderer.domElement);
 
 // 4b. Post-Processing setup (Bloom / Glow)
@@ -418,6 +433,29 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
+const infoboxContainer = document.querySelector(".infobox-container");
+
+//Hide welcome infobox
+function hideWelcomeInfobox() {
+  // console.log("Hide fired");
+  infoboxContainer.classList.add("hide-welcome");
+  document.querySelector(".arrow-image").classList.add("mirror-image");
+}
+
+//Toggle display of welcome infobox when user clicks on side button
+document.querySelector(".expand-button").addEventListener("click", function () {
+  // console.log("Toggle fired");
+  infoboxContainer.classList.toggle("hide-welcome");
+  document.querySelector(".arrow-image").classList.toggle("mirror-image");
+});
+
+//Write status of "Don't show welcome infobox" checkbox to local storage
+document.querySelector("#dont-show").addEventListener("click", function () {
+  let radio = document.querySelector("#dont-show");
+  // console.log(radio.checked);
+  localStorage.setItem("hideWelcomeInfoboxCheckboxSelected", radio.checked);
+});
+
 // Set the camera to a perfect position to fit the entire swimmer in view based on the selected viewing direction, the model's dimensions, and the screen aspect ratio.
 // Viewing direction can be "front" (2, z), "left" (4, -x), "top" (5, y), "right" (6, x), "back" (8, -z), or "iso" (0)
 function setCameraPositionToFitScreen(viewingDirection) {
@@ -504,7 +542,7 @@ function animate(timestamp) {
   requestAnimationFrame(animate);
 
   //Update the fps stats
-  stats.update();
+  //stats.update();
 
   // Update the timer with the native timestamp
   timer.update(timestamp);

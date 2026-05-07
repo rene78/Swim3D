@@ -56,13 +56,58 @@
 <body>
   <div id="loading">Loading 3D Model...</div>
 
+  <!-- Logo -->
+  <img src="./img/logo_white.svg" alt="Logo of Swim3D" class="logo-top-left">
+
+  <!-- Welcome Info Box -->
+  <div class="infobox-container">
+    <div class="welcome-infobox">
+      <img src="./img/logo_blue.svg" alt="Logo of Swim3D" class="logo">
+      <div class="welcome-infobox-text">A <b>3D visualization of swimming techniques</b> performed by professionals, designed for
+        <b>learners and educators</b> seeking to analyze perfect form from every angle.
+      </div>
+      <div class="welcome-infobox-subheading">Keyboard Shortcuts</div>
+      <div class="welcome-infobox-text" style="color: gray; text-align: center;">(Work in progress. Add a table here.)</div>
+      <div class="welcome-infobox-subheading">Reference Videos</div>
+      <div class="welcome-infobox-text">The videos below were used as reference to create the 3D animations in Blender. Currently, only the freestyle stroke is available.</div>
+      <table class="reference-videos-table">
+        <tbody>
+          <tr>
+            <td>Freestyle</td>
+            <td><a href="https://www.youtube.com/watch?v=b-aG10Hv-NM" target="_blank" rel="noopener noreferrer">Is This
+                The Easiest 1:10/100m Freestyle Ever?</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="welcome-infobox-subheading">Do you want to help?</div>
+      <a class="welcome-infobox-links github-link" href="https://github.com/rene78/Swim3D" target="_blank"
+        title="Go to GitHub repository of Swim3D"><img src="./img/github-icon.svg" alt="GitHub icon"
+          class="thumbnails"><span class="github-text">Improve the app</span></a>
+      <div class="welcome-infobox-text">This is a community-driven open source project. People with skills in <b>3D
+          modeling</b> and <b>frontend developers</b> are welcome to
+        contribute! The goal is to have <b>animations for all strokes and techniques</b> like flip turns or block
+        starts.</div>
+      <p class="welcome-infobox-text">If you have any feedback or suggestions, feel free to open an <a
+          href="https://github.com/rene78/Swim3D/issues" target="_blank" rel="noopener noreferrer">issue</a> on GitHub.
+      </p>
+      <div class="welcome-infobox-dont-show">
+        <input type="checkbox" id="dont-show" name="dontShow">
+        <label for="dontShow" id="dont-show-label">Do not show on startup</label>
+      </div>
+    </div>
+    <button class="expand-button"><img class="arrow-image mirror-image" src="./img/arrow_left.png"
+        alt="Arrow left"></button>
+  </div>
+
   <!-- Control and settings buttons -->
   <div id="controls-container">
     <input type="range" class="progress-slider" min="0" max="1.11" step="0.01" value="0">
 
     <div class="controls-row">
       <button id="step-backward-btn" class="step-btn" title="Step backward 0.01s" aria-label="Step backward"></button>
-      <button id="play-pause-btn" class="pause" title="Pause animation <Spacebar>" aria-label="Pause animation"></button>
+      <button id="play-pause-btn" class="pause" title="Pause animation <Spacebar>"
+        aria-label="Pause animation"></button>
       <button id="step-forward-btn" class="step-btn" title="Step forward 0.01s" aria-label="Step forward"></button>
       <button id="settings-btn" title="Settings" aria-label="Settings">
         <svg fill="currentColor" height="28" viewBox="0 0 24 24" width="28" xmlns="http://www.w3.org/2000/svg">
@@ -138,7 +183,6 @@
           class="speed-label-normal">Standard</span></button>
     </div>
   </div>
-
 </body>
 
 </html>
