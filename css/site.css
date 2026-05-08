@@ -39,8 +39,7 @@ canvas {
   left: 0;
   height: 100vh;
   height: -webkit-fill-available;
-  /* mobile viewport bug fix */
-  width: 320px;
+  width: 360px;
   border-radius: 0 30px 30px 0;
   background-color: white;
   padding: 20px;
@@ -136,6 +135,32 @@ canvas {
 
 .welcome-infobox-text {
   text-align: left;
+}
+
+.shortcuts-table {
+  margin: 0 auto;
+}
+
+.shortcuts-table thead tr {
+  background-color: lightgray;
+}
+
+.shortcuts-table td {
+  padding: 3px 5px;
+}
+
+/* .shortcuts-table td:nth-child(2) {
+  text-align: left;
+} */
+
+.keyboard-button {
+  padding: 0.1rem 0.4rem;
+  box-shadow: 0 0 #d9d9d9, 0 0px #d9d9d9, 0 1px #d9d9d9, 0 2px #d9d9d9, 0 3px #d9d9d9, 0 4px #d9d9d9, 0 5px #d9d9d9, 2px 2.5px 4px #adb5bd, 0 -1px 2.5px #adb5bd;
+  color: #343a40;
+  border: 1px solid #e6e6e6;
+  border-radius: 0.25rem;
+  display: inline-block;
+  font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
 .welcome-infobox-links {

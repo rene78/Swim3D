@@ -406,6 +406,15 @@ document.addEventListener('keydown', (e) => {
     e.preventDefault(); // Prevent default spacebar scrolling behavior
     togglePlayPause();
   }
+
+  //Left arrow and right arrow keys to step backward and forward in the animation when paused
+  else if (e.code === 'ArrowRight' && animationAction && animationAction.paused) {
+    stepAnimation(0.01);
+  }
+  else if (e.code === 'ArrowLeft' && animationAction && animationAction.paused) {
+    stepAnimation(-0.01);
+  }
+
   // 'w' key to toggle water visibility
   else if (e.key.toLowerCase() === 'w') {
     waterToggle.checked = !waterToggle.checked;
@@ -422,14 +431,6 @@ document.addEventListener('keydown', (e) => {
     // console.log('New camera position for front view:', newCameraPos[0], newCameraPos[1], newCameraPos[2]);
     if (newCameraPos) camera.position.set(newCameraPos[0], newCameraPos[1], newCameraPos[2]);
     controls.update(); // Update controls to reflect changes
-  }
-
-  //Left arrow and right arrow keys to step backward and forward in the animation when paused
-  else if (e.code === 'ArrowRight' && animationAction && animationAction.paused) {
-    stepAnimation(0.01);
-  }
-  else if (e.code === 'ArrowLeft' && animationAction && animationAction.paused) {
-    stepAnimation(-0.01);
   }
 });
 
