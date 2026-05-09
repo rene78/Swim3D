@@ -2,9 +2,31 @@
 <html lang="en">
 
 <head>
+  <!-- Primary Meta Tags -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Swim3D - Study the perfect freestyle technique</title>
+  <meta name="description"
+    content="An interactive 3D visualization of perfect swimming techniques performed by professionals. Designed for learners, swimmers, and educators to analyze freestyle form from every angle.">
+  <meta name="keywords"
+    content="swimming technique, freestyle swimming, 3D swimming animation, learn to swim, swimming form analysis, Swim3D, front crawl">
+  <link rel="canonical" href="https://rene78.github.io/Swim3D/">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://rene78.github.io/Swim3D/">
+  <meta property="og:title" content="Swim3D - Study the perfect freestyle technique">
+  <meta property="og:description"
+    content="Analyze perfect freestyle swimming form from every angle with our interactive 3D visualization tool.">
+  <meta property="og:image" content="https://rene78.github.io/Swim3D/img/opengraph_image.webp">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://rene78.github.io/Swim3D/">
+  <meta property="twitter:title" content="Swim3D - Study the perfect freestyle technique">
+  <meta property="twitter:description"
+    content="Analyze perfect freestyle swimming form from every angle with our interactive 3D visualization tool.">
+  <meta property="twitter:image" content="https://rene78.github.io/Swim3D/img/opengraph_image.webp">
 
   <!-- Favicon related -->
   <link rel="icon" type="image/png" href="./img/favicon-96x96.png" sizes="96x96" />
@@ -37,6 +59,24 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Swim3D">
 
+  <!-- Schema.org JSON-LD -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Swim3D",
+      "operatingSystem": "Web",
+      "applicationCategory": "EducationalApplication",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "description": "An interactive 3D web application to study and analyze professional freestyle swimming techniques.",
+      "url": "https://rene78.github.io/Swim3D/"
+    }
+</script>
+
   <!-- App Registration Script for PWA -->
   <script>
     if ('serviceWorker' in navigator) {
@@ -56,11 +96,14 @@
 <body>
   <div id="loading">Loading 3D Model...</div>
 
-  <!-- Logo -->
-  <img src="./img/logo_white.svg" alt="Logo of Swim3D" class="logo-top-left">
+  <!-- Logo (wrapped in an h1 element for SEO)-->
+  <h1 class="logo-top-left">
+    <span class="sr-only">Swim3D - 3D Swimming Technique Analyzer</span>
+    <img src="./img/logo_white.svg" alt="Logo of Swim3D">
+  </h1>
 
   <!-- Welcome Info Box -->
-  <div class="infobox-container">
+  <main class="infobox-container">
     <div class="welcome-infobox">
       <img src="./img/logo_blue.svg" alt="Logo of Swim3D" class="logo">
       <div class="welcome-infobox-text">A <b>3D visualization of swimming techniques</b> performed by professionals,
@@ -113,7 +156,7 @@
           </tr>
         </tbody>
       </table>
-      
+
       <div class="welcome-infobox-subheading">Reference Videos</div>
       <div class="welcome-infobox-text">The videos below were used as reference to create the 3D animations in Blender.
         Currently, only the freestyle stroke is available.</div>
@@ -128,8 +171,8 @@
       </table>
       <div class="welcome-infobox-subheading">Do you want to help?</div>
       <a class="welcome-infobox-links github-link" href="https://github.com/rene78/Swim3D" target="_blank"
-        title="Go to GitHub repository of Swim3D"><img src="./img/github-icon.svg" alt="GitHub icon"
-          class="thumbnails"><span class="github-text">Improve the app</span></a>
+        rel="noopener noreferrer" title="Go to GitHub repository of Swim3D"><img src="./img/github-icon.svg"
+          alt="GitHub icon" class="thumbnails"><span class="github-text">Improve the app</span></a>
       <div class="welcome-infobox-text">This is a community-driven open source project. People with skills in <b>3D
           modeling</b> and <b>frontend developers</b> are welcome to
         contribute! The goal is to have <b>animations for all strokes and techniques</b> like flip turns or block
@@ -144,7 +187,7 @@
     </div>
     <button class="expand-button"><img class="arrow-image mirror-image" src="./img/arrow_left.png"
         alt="Arrow left"></button>
-  </div>
+  </main>
 
   <!-- Control and settings buttons -->
   <div id="controls-container">

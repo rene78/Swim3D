@@ -22,12 +22,17 @@ canvas {
 }
 
 .logo-top-left {
+  display: flex;
   position: fixed;
   top: 0;
   left: 0;
   opacity: 0.5;
-  width: 100px;
   margin: 10px;
+}
+
+.logo-top-left img {
+  width: 100px;
+  height: auto;
 }
 
 /* #region CSS RELATED TO WELCOME INFOBOX */
@@ -65,7 +70,7 @@ canvas {
 }
 
 .hide-welcome {
-  left: -320px;
+  left: -360px;
 }
 
 @media (max-width: 1200px) {
@@ -123,6 +128,18 @@ canvas {
 .logo {
   width: 260px;
   margin: 25px 0;
+}
+
+/* Needed for SEO. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
 }
 
 .welcome-infobox-heading {
